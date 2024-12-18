@@ -11,7 +11,7 @@ export function AuthForm() {
             Welcome to Project Collaborator
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in or create an account to get started
+            Sign in to your account or create a new one
           </p>
         </div>
         
@@ -30,7 +30,7 @@ export function AuthForm() {
               },
             }}
             providers={[]}
-            view="sign_up"
+            view="sign_in"
             showLinks={true}
           />
         </div>
