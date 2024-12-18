@@ -29,6 +29,16 @@ export function ProjectsList({ projects, onProjectsChange, onNewProject }: Proje
     toast.success("Project updated successfully");
   };
 
+  const handleStatusChange = (projectId: string, newStatus: "active" | "completed" | "on-hold") => {
+    onProjectsChange(
+      projects.map(p =>
+        p.id === projectId
+          ? { ...p, status: newStatus }
+          : p
+      )
+    );
+  };
+
   const handleDeleteProject = () => {
     if (deletingProject) {
       onProjectsChange(projects.filter(p => p.id !== deletingProject.id));
@@ -67,7 +77,10 @@ export function ProjectsList({ projects, onProjectsChange, onNewProject }: Proje
               </Button>
             </div>
             <Link to={`/project/${project.id}`}>
-              <ProjectCard {...project} />
+              <ProjectCard 
+                {...project} 
+                onStatusChange={(newStatus) => handleStatusChange(project.id, newStatus)}
+              />
             </Link>
           </div>
         ))}
