@@ -58,6 +58,9 @@ export default function Login() {
             },
           }}
           providers={[]}
+          view="sign_in"
+          showLinks={true}
+          redirectTo={window.location.origin}
         />
       </div>
     </div>
