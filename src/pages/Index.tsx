@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { projects as initialProjects, consultantGroups as initialConsultantGroups, Project } from "../data/mockData";
 import { ProjectsList } from "@/components/ProjectsList";
 import { ConsultantsList } from "@/components/ConsultantsList";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
@@ -8,55 +7,165 @@ import { NewGroupDialog } from "@/components/NewGroupDialog";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export default function Index() {
-  const [localProjects, setLocalProjects] = useState<Project[]>(() => {
-    const savedProjects = localStorage.getItem('projects');
-    return savedProjects ? JSON.parse(savedProjects) : initialProjects;
-  });
-
-  const [localConsultantGroups, setLocalConsultantGroups] = useState(() => {
-    const savedGroups = localStorage.getItem('consultantGroups');
-    return savedGroups ? JSON.parse(savedGroups) : initialConsultantGroups;
-  });
-
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
 
-  // Add an effect to listen for storage changes
+  // Check authentication status
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'projects' && e.newValue) {
-        setLocalProjects(JSON.parse(e.newValue));
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login');
       }
     };
+    
+    checkAuth();
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate('/login');
+      }
+    });
 
-  useEffect(() => {
-    localStorage.setItem('projects', JSON.stringify(localProjects));
-  }, [localProjects]);
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
-  useEffect(() => {
-    localStorage.setItem('consultantGroups', JSON.stringify(localConsultantGroups));
-  }, [localConsultantGroups]);
+  // Fetch projects
+  const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
 
-  const handleNewProject = (newProject: Omit<Project, 'id'>) => {
-    const project: Project = {
-      ...newProject,
-      id: (localProjects.length + 1).toString(),
-      status: "active" as const,
-      consultants: []
-    };
-    setLocalProjects([...localProjects, project]);
-  };
+  // Fetch consultant groups with their consultants
+  const { data: consultantGroups = {}, isLoading: isLoadingGroups } = useQuery({
+    queryKey: ['consultant_groups'],
+    queryFn: async () => {
+      const { data: groups, error: groupsError } = await supabase
+        .from('consultant_groups')
+        .select('*')
+        .order('created_at', { ascending: true });
+      
+      if (groupsError) throw groupsError;
+
+      const { data: consultants, error: consultantsError } = await supabase
+        .from('consultants')
+        .select('*')
+        .order('created_at', { ascending: true });
+      
+      if (consultantsError) throw consultantsError;
+
+      // Transform the data into the expected format
+      const groupedData: Record<string, { title: string; consultants: any[] }> = {};
+      groups.forEach((group) => {
+        groupedData[group.id] = {
+          title: group.title,
+          consultants: consultants.filter(c => c.group_id === group.id) || []
+        };
+      });
+
+      return groupedData;
+    }
+  });
+
+  // Add new project mutation
+  const addProjectMutation = useMutation({
+    mutationFn: async (newProject: any) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
+      const { error } = await supabase
+        .from('projects')
+        .insert([{ ...newProject, owner_id: user.id }]);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('Project added successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to add project: ' + error.message);
+    }
+  });
+
+  // Add new consultant group mutation
+  const addGroupMutation = useMutation({
+    mutationFn: async (groupName: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
+      const { error } = await supabase
+        .from('consultant_groups')
+        .insert([{ 
+          title: groupName,
+          owner_id: user.id
+        }]);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['consultant_groups'] });
+      toast.success('Group added successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to add group: ' + error.message);
+    }
+  });
+
+  // Add new consultant mutation
+  const addConsultantMutation = useMutation({
+    mutationFn: async (newConsultant: any) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
+      const { group, ...consultantData } = newConsultant;
+      const { error } = await supabase
+        .from('consultants')
+        .insert([{ 
+          ...consultantData,
+          group_id: group,
+          owner_id: user.id
+        }]);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['consultant_groups'] });
+      toast.success('Consultant added successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to add consultant: ' + error.message);
+    }
+  });
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error('Error signing out: ' + error.message);
+    } else {
+      navigate('/login');
+    }
   };
+
+  if (isLoadingProjects || isLoadingGroups) {
+    return <div className="container mx-auto py-8">Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto py-8 space-y-8">
@@ -68,14 +177,14 @@ export default function Index() {
       </div>
 
       <ProjectsList
-        projects={localProjects}
-        onProjectsChange={setLocalProjects}
+        projects={projects}
+        onProjectsChange={() => queryClient.invalidateQueries({ queryKey: ['projects'] })}
         onNewProject={() => setShowNewProjectDialog(true)}
       />
 
       <ConsultantsList
-        consultantGroups={localConsultantGroups || {}}
-        onConsultantGroupsChange={setLocalConsultantGroups}
+        consultantGroups={consultantGroups}
+        onConsultantGroupsChange={() => queryClient.invalidateQueries({ queryKey: ['consultant_groups'] })}
         onNewConsultant={() => setShowNewConsultantDialog(true)}
         onNewGroup={() => setShowNewGroupDialog(true)}
       />
@@ -83,19 +192,19 @@ export default function Index() {
       <NewProjectDialog
         open={showNewProjectDialog}
         onOpenChange={setShowNewProjectDialog}
-        onSave={handleNewProject}
+        onSave={(newProject) => {
+          addProjectMutation.mutate(newProject);
+          setShowNewProjectDialog(false);
+        }}
       />
 
       <NewConsultantDialog
         open={showNewConsultantDialog}
         onOpenChange={setShowNewConsultantDialog}
-        groups={localConsultantGroups}
+        groups={consultantGroups}
         onSave={(newConsultant) => {
-          const groupKey = newConsultant.group;
-          const { group, ...consultantData } = newConsultant;
-          const newGroups = { ...localConsultantGroups };
-          newGroups[groupKey].consultants.push(consultantData);
-          setLocalConsultantGroups(newGroups);
+          addConsultantMutation.mutate(newConsultant);
+          setShowNewConsultantDialog(false);
         }}
       />
 
@@ -103,13 +212,8 @@ export default function Index() {
         open={showNewGroupDialog}
         onOpenChange={setShowNewGroupDialog}
         onSave={(groupName) => {
-          setLocalConsultantGroups({
-            ...localConsultantGroups,
-            [groupName.toLowerCase()]: {
-              title: groupName,
-              consultants: [],
-            },
-          });
+          addGroupMutation.mutate(groupName);
+          setShowNewGroupDialog(false);
         }}
       />
     </div>

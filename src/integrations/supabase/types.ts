@@ -9,6 +9,80 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      consultant_groups: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      consultants: {
+        Row: {
+          address: string
+          company: string
+          created_at: string
+          email: string
+          group_id: string | null
+          id: string
+          name: string
+          owner_id: string
+          phone: string
+          specialty: Database["public"]["Enums"]["consultant_specialty"]
+          updated_at: string
+        }
+        Insert: {
+          address?: string
+          company?: string
+          created_at?: string
+          email: string
+          group_id?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          phone?: string
+          specialty: Database["public"]["Enums"]["consultant_specialty"]
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          company?: string
+          created_at?: string
+          email?: string
+          group_id?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          phone?: string
+          specialty?: Database["public"]["Enums"]["consultant_specialty"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultants_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "consultant_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -115,6 +189,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      consultant_specialty:
+        | "structural"
+        | "mechanical"
+        | "electrical"
+        | "plumbing"
+        | "architectural"
+        | "civil"
+        | "other"
       project_status: "active" | "completed" | "on-hold"
       user_role: "admin" | "pending" | "user"
     }
