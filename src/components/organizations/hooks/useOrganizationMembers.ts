@@ -14,7 +14,7 @@ export function useOrganizationMembers(selectedOrg: Organization | null) {
         .select(`
           user_id,
           role,
-          profiles:id (
+          profiles!inner (
             username
           )
         `)
@@ -25,7 +25,7 @@ export function useOrganizationMembers(selectedOrg: Organization | null) {
       return data.map(member => ({
         user_id: member.user_id,
         role: member.role,
-        profile_username: member.profiles?.username || 'Unknown User'
+        profile_username: member.profiles.username
       })) as Member[];
     }
   });
