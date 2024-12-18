@@ -34,22 +34,23 @@ export interface DatabaseProjectConsultant {
   created_at: string;
 }
 
-// Utility function to transform database consultant to frontend consultant
+// Transform database consultant to frontend consultant
 export const transformDatabaseConsultant = (consultant: DatabaseProjectConsultant): ProjectConsultant => ({
   name: consultant.name,
   email: consultant.email,
   specialty: consultant.specialty,
-  quote: consultant.quote || undefined,
+  quote: consultant.quote || 0, // Ensure quote is always a number
   status: consultant.status as 'in-progress' | 'completed' | 'on-hold' | undefined,
-  // Add default values for required fields that don't exist in database
-  phone: 'N/A',
-  company: 'N/A'
+  phone: 'N/A', // Default value
+  company: 'N/A' // Default value
 });
 
-// Utility function to transform frontend consultant to database format
-export const transformToDatabase = (projectId: string, consultant: BaseConsultant) => ({
+// Transform frontend consultant to database format
+export const transformToDatabase = (projectId: string, consultant: ProjectConsultant) => ({
   project_id: projectId,
   email: consultant.email,
   name: consultant.name,
-  specialty: consultant.specialty
+  specialty: consultant.specialty,
+  quote: consultant.quote || 0,
+  status: consultant.status || 'in-progress'
 });

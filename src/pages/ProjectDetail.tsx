@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ProjectCard } from "@/components/ProjectCard";
 import { ConsultantCard } from "@/components/ConsultantCard";
@@ -7,7 +7,7 @@ import { ConsultantTasks } from "@/components/ConsultantTasks";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { consultantGroups, BaseConsultant } from "../types/consultant";
+import { consultantGroups, BaseConsultant, ProjectConsultant } from "../types/consultant";
 import { PaymentManagement } from "@/components/PaymentManagement";
 import { EngagementTabContent } from "@/components/EngagementTabContent";
 import { toast } from "sonner";
@@ -33,7 +33,6 @@ interface ConsultantTasks {
 
 export default function ProjectDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("details");
   const [selectedConsultant, setSelectedConsultant] = useState<BaseConsultant | null>(null);
@@ -92,7 +91,7 @@ export default function ProjectDetail() {
 
   // Add consultant mutation
   const addConsultant = useMutation({
-    mutationFn: async (consultant: BaseConsultant) => {
+    mutationFn: async (consultant: ProjectConsultant) => {
       if (!id) throw new Error('Project ID is required');
       const { error } = await supabase
         .from('project_consultants')
@@ -188,10 +187,8 @@ export default function ProjectDetail() {
       removeConsultant.mutate({ projectId: project.id, email: consultant.email });
     } else {
       addConsultant.mutate({
-        projectId: project.id,
-        email: consultant.email,
-        name: consultant.name,
-        specialty: consultant.specialty
+        ...consultant,
+        quote: 0 // Set default quote when adding a consultant
       });
     }
   };
