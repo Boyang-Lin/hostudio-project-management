@@ -121,13 +121,17 @@ export function ConsultantEditDialog({
                   <FormLabel>Group</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full bg-background">
                         <SelectValue placeholder="Select group" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="bg-background border shadow-lg">
                       {Object.entries(groups).map(([key, group]) => (
-                        <SelectItem key={key} value={key}>
+                        <SelectItem 
+                          key={key} 
+                          value={key}
+                          className="hover:bg-muted focus:bg-muted"
+                        >
                           {group.title}
                         </SelectItem>
                       ))}
