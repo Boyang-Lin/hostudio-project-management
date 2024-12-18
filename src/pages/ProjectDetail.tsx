@@ -32,6 +32,7 @@ const ProjectDetail = () => {
   const [selectedConsultant, setSelectedConsultant] = useState<BaseConsultant | null>(null);
   const [consultantGroups, setConsultantGroups] = useState(initialConsultantGroups);
 
+  // Fetch project details
   const { data: project, isLoading: isLoadingProject } = useQuery({
     queryKey: ["project", id],
     queryFn: async () => {
@@ -40,11 +41,13 @@ const ProjectDetail = () => {
         .select("*")
         .eq("id", id)
         .single();
-      if (error) throw new Error(error.message);
+      
+      if (error) throw error;
       return data;
     }
   });
 
+  // Fetch project consultants
   const { data: consultantsData, isLoading: isLoadingConsultants } = useQuery({
     queryKey: ["project_consultants", id],
     queryFn: async () => {
@@ -52,8 +55,13 @@ const ProjectDetail = () => {
         .from("project_consultants")
         .select("*")
         .eq("project_id", id);
-      if (error) throw new Error(error.message);
-      return data.map(transformDatabaseConsultant);
+      
+      if (error) throw error;
+      return data.map((consultant) => ({
+        ...consultant,
+        quote: consultant.quote || 0,
+        status: consultant.status || 'in-progress'
+      }));
     }
   });
 
@@ -63,17 +71,28 @@ const ProjectDetail = () => {
     }
   }, [consultantsData]);
 
+  // Add consultant mutation
   const mutation = useMutation({
     mutationFn: async (newConsultant: BaseConsultant) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("project_consultants")
-        .insert([transformToDatabase(id!, newConsultant)]);
-      if (error) throw new Error(error.message);
-      return data;
+        .insert([{
+          project_id: id,
+          email: newConsultant.email,
+          name: newConsultant.name,
+          specialty: newConsultant.specialty,
+          quote: 0,
+          status: 'in-progress'
+        }]);
+      
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project_consultants", id] });
       toast.success("Consultant added successfully!");
+    },
+    onError: (error) => {
+      toast.error("Failed to add consultant: " + error.message);
     }
   });
 
