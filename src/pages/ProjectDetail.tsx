@@ -10,7 +10,6 @@ import { PaymentManagement } from "@/components/PaymentManagement";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { transformDatabaseConsultant, transformToDatabase } from "../types/project";
 import { BaseConsultant, ProjectConsultant } from "../types/consultant";
 import { consultantGroups as initialConsultantGroups } from "../data/mockData";
 
@@ -58,9 +57,14 @@ const ProjectDetail = () => {
       
       if (error) throw error;
       return data.map((consultant) => ({
-        ...consultant,
+        name: consultant.name,
+        email: consultant.email,
+        phone: "N/A", // Default value since it's not in the database
+        specialty: consultant.specialty,
+        company: "N/A", // Default value since it's not in the database
+        address: "N/A", // Default value since it's not in the database
         quote: consultant.quote || 0,
-        status: consultant.status || 'in-progress'
+        status: consultant.status as 'in-progress' | 'completed' | 'on-hold' || 'in-progress'
       }));
     }
   });
@@ -133,10 +137,9 @@ const ProjectDetail = () => {
         constructionCost={project.construction_cost}
       />
       <ConsultantGroupSelect
-        consultantEmail={selectedConsultant?.email || ''}
-        currentGroup=""
-        groups={consultantGroups}
-        onGroupChange={() => {}}
+        selectedConsultant={selectedConsultant}
+        setSelectedConsultant={setSelectedConsultant}
+        onAddConsultant={handleAddConsultant}
       />
       <Tabs defaultValue="engagement">
         <TabsList>
