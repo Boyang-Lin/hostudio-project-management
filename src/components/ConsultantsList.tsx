@@ -114,10 +114,9 @@ export function ConsultantsList({
                   </Button>
                 </div>
                 <ConsultantCard 
-                  {...consultant} 
-                  group={key}
-                  groups={consultantGroups}
-                  onGroupChange={(newGroup) => handleGroupChange(consultant.email, key, newGroup)}
+                  {...consultant}
+                  groups={consultant.groups}
+                  consultantGroups={consultantGroups}
                 />
               </div>
             ))}
