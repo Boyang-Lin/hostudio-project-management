@@ -3,10 +3,12 @@ import { ConsultantsList } from "@/components/ConsultantsList";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
 import { NewConsultantDialog } from "@/components/NewConsultantDialog";
 import { NewGroupDialog } from "@/components/NewGroupDialog";
+import { OrganizationManagement } from "@/components/organizations/OrganizationManagement";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { consultantGroups } from "@/data/mockData";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Dashboard = () => {
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
@@ -86,16 +88,32 @@ export const Dashboard = () => {
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      <ProjectsList
-        onNewProject={() => setShowNewProjectDialog(true)}
-      />
+      <Tabs defaultValue="projects" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="projects">Projects</TabsTrigger>
+          <TabsTrigger value="consultants">Consultants</TabsTrigger>
+          <TabsTrigger value="organizations">Organizations</TabsTrigger>
+        </TabsList>
 
-      <ConsultantsList
-        consultantGroups={groups}
-        onConsultantGroupsChange={handleConsultantGroupsChange}
-        onNewConsultant={() => setShowNewConsultantDialog(true)}
-        onNewGroup={() => setShowNewGroupDialog(true)}
-      />
+        <TabsContent value="projects">
+          <ProjectsList
+            onNewProject={() => setShowNewProjectDialog(true)}
+          />
+        </TabsContent>
+
+        <TabsContent value="consultants">
+          <ConsultantsList
+            consultantGroups={groups}
+            onConsultantGroupsChange={handleConsultantGroupsChange}
+            onNewConsultant={() => setShowNewConsultantDialog(true)}
+            onNewGroup={() => setShowNewGroupDialog(true)}
+          />
+        </TabsContent>
+
+        <TabsContent value="organizations">
+          <OrganizationManagement />
+        </TabsContent>
+      </Tabs>
 
       <NewProjectDialog
         open={showNewProjectDialog}
