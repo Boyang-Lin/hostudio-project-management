@@ -26,10 +26,10 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
       
       if (error) {
+        console.error('Error fetching projects:', error);
         toast.error('Failed to fetch projects');
         throw error;
       }
@@ -44,7 +44,10 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
         .update(updatedProject)
         .eq('id', updatedProject.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Update error:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -52,8 +55,8 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
       setEditingProject(null);
     },
     onError: (error) => {
-      toast.error("Failed to update project");
       console.error('Update error:', error);
+      toast.error("Failed to update project");
     },
   });
 
@@ -64,7 +67,10 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
         .delete()
         .eq('id', projectId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Delete error:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -72,8 +78,8 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
       setDeletingProject(null);
     },
     onError: (error) => {
-      toast.error("Failed to delete project");
       console.error('Delete error:', error);
+      toast.error("Failed to delete project");
     },
   });
 
