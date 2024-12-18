@@ -44,9 +44,12 @@ export default function Index() {
       <NewConsultantDialog
         open={showNewConsultantDialog}
         onOpenChange={setShowNewConsultantDialog}
+        groups={localConsultantGroups}
         onSave={(newConsultant) => {
+          const groupKey = newConsultant.group;
+          const { group, ...consultantData } = newConsultant;
           const newGroups = { ...localConsultantGroups };
-          newGroups.engineers.consultants.push(newConsultant);
+          newGroups[groupKey].consultants.push(consultantData);
           setLocalConsultantGroups(newGroups);
         }}
       />
