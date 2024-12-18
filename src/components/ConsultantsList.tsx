@@ -27,10 +27,16 @@ export function ConsultantsList({
   const { data: groupsData = {}, isLoading } = useQuery({
     queryKey: ['consultant-groups'],
     queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        throw new Error('No user found');
+      }
+
       // First fetch all consultant groups
       const { data: groups, error: groupsError } = await supabase
         .from('consultant_groups')
-        .select('*');
+        .select('*')
+        .eq('user_id', user.user.id);
 
       if (groupsError) {
         toast.error('Failed to fetch consultant groups');
@@ -40,7 +46,8 @@ export function ConsultantsList({
       // Then fetch all consultants
       const { data: consultants, error: consultantsError } = await supabase
         .from('consultants')
-        .select('*');
+        .select('*')
+        .eq('user_id', user.user.id);
 
       if (consultantsError) {
         toast.error('Failed to fetch consultants');
@@ -77,6 +84,12 @@ export function ConsultantsList({
 
   const handleConsultantUpdate = async (updatedConsultant: Consultant, newGroupKey: string) => {
     if (!editingConsultant) return;
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      toast.error('No user found');
+      return;
+    }
 
     const { error } = await supabase
       .from('consultants')
@@ -119,16 +132,23 @@ export function ConsultantsList({
   };
 
   const handleNewConsultant = async (data: Consultant & { group: string }) => {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      toast.error('No user found');
+      return;
+    }
+
     const { error } = await supabase
       .from('consultants')
-      .insert([{
+      .insert({
         name: data.name,
         email: data.email,
         phone: data.phone,
         specialty: data.specialty,
         company: data.company,
-        address: data.address
-      }]);
+        address: data.address,
+        user_id: user.user.id
+      });
 
     if (error) {
       toast.error('Failed to add consultant');

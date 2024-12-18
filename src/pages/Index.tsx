@@ -11,8 +11,6 @@ export default function Index() {
       />
 
       <ConsultantsList
-        consultantGroups={{}}
-        onConsultantGroupsChange={() => {}}
         onNewConsultant={() => {}}
         onNewGroup={() => {}}
       />
