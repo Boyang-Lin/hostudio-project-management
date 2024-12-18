@@ -13,7 +13,19 @@ export interface Member {
 export interface OrganizationMember {
   user_id: string;
   role: string;
-  profiles?: {
-    username: string | null;
+  profiles: {
+    username: string;
   } | null;
+}
+
+export interface UseOrganizationsResult {
+  organizations: Organization[];
+  isLoading: boolean;
+  error: Error | null;
+}
+
+export interface UseOrganizationMembersResult {
+  members: Member[];
+  isLoading: boolean;
+  error: Error | null;
 }

@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { UserPlus, FolderPlus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { OrganizationList } from "./OrganizationList";
 import { MembersList } from "./MembersList";
-import { Organization, OrganizationMember, Member } from "./types";
+import { Organization } from "./types";
+import { useOrganizations } from "./hooks/useOrganizations";
+import { useOrganizationMembers } from "./hooks/useOrganizationMembers";
+import { NewOrgDialog, InviteMemberDialog } from "./dialogs/OrganizationDialogs";
 
 export function OrganizationManagement() {
   const [showNewOrgDialog, setShowNewOrgDialog] = useState(false);
@@ -18,55 +19,8 @@ export function OrganizationManagement() {
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: organizations = [], isLoading: orgsLoading } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { data: memberships, error: membershipError } = await supabase
-        .from('organization_members')
-        .select('organization_id')
-        .eq('user_id', user.id);
-
-      if (membershipError) throw membershipError;
-
-      const { data: orgs, error: orgsError } = await supabase
-        .from('organizations')
-        .select('*')
-        .in('id', memberships?.map(m => m.organization_id) || []);
-
-      if (orgsError) throw orgsError;
-      return orgs as Organization[];
-    }
-  });
-
-  const { data: members = [], isLoading: membersLoading } = useQuery({
-    queryKey: ['organization-members', selectedOrg?.id],
-    enabled: !!selectedOrg,
-    queryFn: async () => {
-      if (!selectedOrg) return [];
-
-      const { data, error } = await supabase
-        .from('organization_members')
-        .select(`
-          user_id,
-          role,
-          profiles:user_id (
-            username
-          )
-        `)
-        .eq('organization_id', selectedOrg.id);
-
-      if (error) throw error;
-
-      return (data as OrganizationMember[]).map(member => ({
-        user_id: member.user_id,
-        role: member.role,
-        profile_username: member.profiles?.username || 'Unknown User'
-      })) as Member[];
-    }
-  });
+  const { data: organizations = [], isLoading: orgsLoading } = useOrganizations();
+  const { data: members = [], isLoading: membersLoading } = useOrganizationMembers(selectedOrg);
 
   const createOrgMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -183,38 +137,21 @@ export function OrganizationManagement() {
         </div>
       )}
 
-      <Dialog open={showNewOrgDialog} onOpenChange={setShowNewOrgDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Organization</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreateOrg} className="space-y-4">
-            <Input
-              placeholder="Organization name"
-              value={newOrgName}
-              onChange={(e) => setNewOrgName(e.target.value)}
-            />
-            <Button type="submit" className="w-full">Create</Button>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <NewOrgDialog
+        open={showNewOrgDialog}
+        onOpenChange={setShowNewOrgDialog}
+        newOrgName={newOrgName}
+        onNewOrgNameChange={setNewOrgName}
+        onSubmit={handleCreateOrg}
+      />
 
-      <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Invite Member</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleInviteMember} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Email address"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-            />
-            <Button type="submit" className="w-full">Send Invitation</Button>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <InviteMemberDialog
+        open={showInviteDialog}
+        onOpenChange={setShowInviteDialog}
+        inviteEmail={inviteEmail}
+        onInviteEmailChange={setInviteEmail}
+        onSubmit={handleInviteMember}
+      />
     </div>
   );
 }
