@@ -2,15 +2,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 
 interface NewConsultantDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (data: any) => void;
+  groups: Record<string, { title: string; consultants: any[] }>;
 }
 
-export function NewConsultantDialog({ open, onOpenChange, onSave }: NewConsultantDialogProps) {
+export function NewConsultantDialog({ open, onOpenChange, onSave, groups }: NewConsultantDialogProps) {
   const form = useForm({
     defaultValues: {
       name: "",
@@ -19,6 +21,7 @@ export function NewConsultantDialog({ open, onOpenChange, onSave }: NewConsultan
       specialty: "",
       company: "",
       address: "",
+      group: "",
     },
   });
 
@@ -105,6 +108,29 @@ export function NewConsultantDialog({ open, onOpenChange, onSave }: NewConsultan
                   <FormControl>
                     <Input placeholder="Enter address" {...field} />
                   </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="group"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Group</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a group" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.entries(groups).map(([key, group]) => (
+                        <SelectItem key={key} value={key}>
+                          {group.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormItem>
               )}
             />

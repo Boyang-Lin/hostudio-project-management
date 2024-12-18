@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { Plus, Trash2, Edit } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { NewConsultantDialog } from "./NewConsultantDialog";
 
 interface ConsultantsListProps {
   consultantGroups: Record<string, { title: string; consultants: Consultant[] }>;
@@ -22,6 +23,7 @@ export function ConsultantsList({
 }: ConsultantsListProps) {
   const [editingConsultant, setEditingConsultant] = useState<{ consultant: Consultant; groupKey: string } | null>(null);
   const [deletingConsultant, setDeletingConsultant] = useState<{ consultant: Consultant; group: string } | null>(null);
+  const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
 
   const handleConsultantUpdate = (updatedConsultant: Consultant, newGroupKey: string) => {
     const newGroups = { ...consultantGroups };
@@ -50,17 +52,12 @@ export function ConsultantsList({
     }
   };
 
-  const handleGroupChange = (consultantEmail: string, currentGroup: string, newGroup: string) => {
+  const handleNewConsultant = (data: Consultant & { group: string }) => {
+    const { group, ...consultantData } = data;
     const newGroups = { ...consultantGroups };
-    const consultant = newGroups[currentGroup].consultants.find(c => c.email === consultantEmail);
-    
-    if (consultant) {
-      newGroups[currentGroup].consultants = newGroups[currentGroup].consultants
-        .filter(c => c.email !== consultantEmail);
-      newGroups[newGroup].consultants.push(consultant);
-      onConsultantGroupsChange(newGroups);
-      toast.success("Consultant group updated successfully");
-    }
+    newGroups[group].consultants.push(consultantData);
+    onConsultantGroupsChange(newGroups);
+    toast.success("Consultant added successfully");
   };
 
   return (
@@ -71,7 +68,7 @@ export function ConsultantsList({
           <Button variant="ghost" onClick={onNewGroup}>
             <Plus className="mr-2 h-4 w-4" /> New Group
           </Button>
-          <Button variant="ghost" onClick={onNewConsultant}>
+          <Button variant="ghost" onClick={() => setShowNewConsultantDialog(true)}>
             <Plus className="mr-2 h-4 w-4" /> Add Consultant
           </Button>
         </div>
@@ -113,12 +110,7 @@ export function ConsultantsList({
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-                <ConsultantCard 
-                  {...consultant} 
-                  group={key}
-                  groups={consultantGroups}
-                  onGroupChange={(newGroup) => handleGroupChange(consultant.email, key, newGroup)}
-                />
+                <ConsultantCard {...consultant} />
               </div>
             ))}
           </div>
@@ -140,6 +132,13 @@ export function ConsultantsList({
         onConfirm={handleDeleteConsultant}
         title="Delete Consultant"
         description="Are you sure you want to delete this consultant? This action cannot be undone."
+      />
+
+      <NewConsultantDialog
+        open={showNewConsultantDialog}
+        onOpenChange={setShowNewConsultantDialog}
+        onSave={handleNewConsultant}
+        groups={consultantGroups}
       />
     </div>
   );
