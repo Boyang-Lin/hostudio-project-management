@@ -1,16 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { ProjectCard } from "@/components/ProjectCard";
-import { ConsultantCard } from "@/components/ConsultantCard";
-import { Plus } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { projects as initialProjects, consultantGroups as initialConsultantGroups, Project, Consultant } from "../data/mockData";
 import { useForm } from "react-hook-form";
-import { projects, consultantGroups, Project, Consultant } from "../data/mockData";
-import { ProjectEditDialog } from "@/components/ProjectEditDialog";
-import { ConsultantEditDialog } from "@/components/ConsultantEditDialog";
-import { ConsultantGroupSelect } from "@/components/ConsultantGroupSelect";
 import { toast } from "sonner";
+import { ProjectsList } from "@/components/ProjectsList";
+import { ConsultantsList } from "@/components/ConsultantsList";
 import {
   Dialog,
   DialogContent,
@@ -26,17 +19,15 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function Index() {
-  const { toast } = useToast();
-  const [localProjects, setLocalProjects] = useState(projects);
-  const [localConsultantGroups, setLocalConsultantGroups] = useState(consultantGroups);
+  const [localProjects, setLocalProjects] = useState(initialProjects);
+  const [localConsultantGroups, setLocalConsultantGroups] = useState(initialConsultantGroups);
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [editingConsultant, setEditingConsultant] = useState<Consultant | null>(null);
 
   const projectForm = useForm({
     defaultValues: {
@@ -67,10 +58,7 @@ export default function Index() {
     setLocalProjects([...localProjects, newProject]);
     setShowNewProjectDialog(false);
     projectForm.reset();
-    toast({
-      title: "Success",
-      description: "New project has been created.",
-    });
+    toast.success("New project has been created");
   };
 
   const handleAddConsultant = (data: any) => {
@@ -82,168 +70,44 @@ export default function Index() {
       company: data.company,
     };
 
-    // Add to engineers group for demo purposes
-    consultantGroups.engineers.consultants.push(newConsultant);
+    const newGroups = { ...localConsultantGroups };
+    newGroups.engineers.consultants.push(newConsultant);
+    setLocalConsultantGroups(newGroups);
     setShowNewConsultantDialog(false);
     consultantForm.reset();
-    toast({
-      title: "Success",
-      description: "New consultant has been added.",
-    });
+    toast.success("New consultant has been added");
   };
 
   const handleAddGroup = () => {
     if (newGroupName.trim()) {
-      consultantGroups[newGroupName.toLowerCase()] = {
+      const newGroups = { ...localConsultantGroups };
+      newGroups[newGroupName.toLowerCase()] = {
         title: newGroupName,
         consultants: [],
       };
-      toast({
-        title: "Success",
-        description: `Group "${newGroupName}" has been created.`,
-      });
+      setLocalConsultantGroups(newGroups);
+      toast.success(`Group "${newGroupName}" has been created`);
       setNewGroupName("");
       setShowNewGroupDialog(false);
     }
   };
 
-  const handleProjectEdit = (project: Project) => {
-    setEditingProject(project);
-  };
-
-  const handleProjectUpdate = (updatedProject: Partial<Project>) => {
-    setLocalProjects(prev =>
-      prev.map(p =>
-        p.id === editingProject?.id
-          ? { ...p, ...updatedProject }
-          : p
-      )
-    );
-  };
-
-  const handleConsultantEdit = (consultant: Consultant) => {
-    setEditingConsultant(consultant);
-  };
-
-  const handleConsultantUpdate = (updatedConsultant: Consultant) => {
-    setLocalConsultantGroups(prev => {
-      const newGroups = { ...prev };
-      Object.keys(newGroups).forEach(groupKey => {
-        newGroups[groupKey].consultants = newGroups[groupKey].consultants.map(c =>
-          c.email === editingConsultant?.email ? updatedConsultant : c
-        );
-      });
-      return newGroups;
-    });
-  };
-
-  const handleGroupChange = (email: string, newGroup: string, oldGroup: string) => {
-    setLocalConsultantGroups(prev => {
-      const newGroups = { ...prev };
-      const consultant = newGroups[oldGroup].consultants.find(c => c.email === email);
-      if (consultant) {
-        newGroups[oldGroup].consultants = newGroups[oldGroup].consultants.filter(
-          c => c.email !== email
-        );
-        newGroups[newGroup].consultants.push(consultant);
-      }
-      return newGroups;
-    });
-  };
-
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-primary">Projects</h1>
-          <Button onClick={() => setShowNewProjectDialog(true)}>
-            <Plus className="mr-2 h-4 w-4" /> New Project
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {localProjects.map((project) => (
-            <div key={project.id} className="relative">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-2 right-2 z-10"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleProjectEdit(project);
-                }}
-              >
-                Edit
-              </Button>
-              <Link to={`/project/${project.id}`}>
-                <ProjectCard {...project} />
-              </Link>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      <div>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-primary">Consultants</h2>
-          <div className="space-x-2">
-            <Button variant="outline" onClick={() => setShowNewGroupDialog(true)}>
-              <Plus className="mr-2 h-4 w-4" /> New Group
-            </Button>
-            <Button onClick={() => setShowNewConsultantDialog(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Add Consultant
-            </Button>
-          </div>
-        </div>
-        {Object.entries(localConsultantGroups).map(([key, group]) => (
-          <div key={key} className="mb-8">
-            <h3 className="text-xl font-semibold mb-4">{group.title}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {group.consultants.map((consultant) => (
-                <div key={consultant.email} className="relative">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-2 right-2 z-10"
-                    onClick={() => handleConsultantEdit(consultant)}
-                  >
-                    Edit
-                  </Button>
-                  <div className="mb-2">
-                    <ConsultantGroupSelect
-                      consultantEmail={consultant.email}
-                      currentGroup={key}
-                      groups={localConsultantGroups}
-                      onGroupChange={handleGroupChange}
-                    />
-                  </div>
-                  <ConsultantCard {...consultant} />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <ProjectEditDialog
-        project={editingProject}
-        open={!!editingProject}
-        onOpenChange={(open) => !open && setEditingProject(null)}
-        onSave={handleProjectUpdate}
+    <div className="container mx-auto py-8 space-y-8">
+      <ProjectsList
+        projects={localProjects}
+        onProjectsChange={setLocalProjects}
+        onNewProject={() => setShowNewProjectDialog(true)}
       />
 
-      <ConsultantEditDialog
-        consultant={editingConsultant}
-        open={!!editingConsultant}
-        onOpenChange={(open) => !open && setEditingConsultant(null)}
-        onSave={handleConsultantUpdate}
+      <ConsultantsList
+        consultantGroups={localConsultantGroups}
+        onConsultantGroupsChange={setLocalConsultantGroups}
+        onNewConsultant={() => setShowNewConsultantDialog(true)}
+        onNewGroup={() => setShowNewGroupDialog(true)}
       />
 
       <Dialog open={showNewProjectDialog} onOpenChange={setShowNewProjectDialog}>
-        <DialogTrigger asChild>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> New Project
-          </Button>
-        </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
@@ -281,11 +145,6 @@ export default function Index() {
       </Dialog>
 
       <Dialog open={showNewConsultantDialog} onOpenChange={setShowNewConsultantDialog}>
-        <DialogTrigger asChild>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Add Consultant
-          </Button>
-        </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add New Consultant</DialogTitle>
@@ -359,11 +218,6 @@ export default function Index() {
       </Dialog>
 
       <Dialog open={showNewGroupDialog} onOpenChange={setShowNewGroupDialog}>
-        <DialogTrigger asChild>
-          <Button variant="outline">
-            <Plus className="mr-2 h-4 w-4" /> New Group
-          </Button>
-        </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Group</DialogTitle>
