@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Users } from "lucide-react";
 
 interface ProjectCardProps {
+  id?: string;
   title: string;
   status: "active" | "completed" | "on-hold";
   dueDate: string;

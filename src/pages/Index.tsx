@@ -2,10 +2,12 @@ import { Button } from "@/components/ui/button";
 import { ProjectCard } from "@/components/ProjectCard";
 import { ConsultantCard } from "@/components/ConsultantCard";
 import { Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Temporary mock data
 const projects = [
   {
+    id: "1",
     title: "Website Redesign",
     status: "active" as const,
     dueDate: "2024-04-30",
@@ -13,6 +15,7 @@ const projects = [
     quote: "$15,000",
   },
   {
+    id: "2",
     title: "Mobile App Development",
     status: "on-hold" as const,
     dueDate: "2024-05-15",
@@ -48,7 +51,9 @@ export default function Index() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
-            <ProjectCard key={project.title} {...project} />
+            <Link key={project.id} to={`/project/${project.id}`}>
+              <ProjectCard {...project} />
+            </Link>
           ))}
         </div>
       </div>
