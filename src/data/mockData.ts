@@ -5,7 +5,6 @@ export interface Consultant {
   specialty: string;
   company: string;
   address?: string;
-  groups: string[]; // Changed to array of group keys
 }
 
 export interface ProjectConsultant extends Consultant {
@@ -55,8 +54,7 @@ export const projects: Project[] = [
         specialty: "UI/UX Design",
         company: "Tech Solutions Inc",
         quote: 15000,
-        status: 'in-progress',
-        groups: ['engineers', 'planners']
+        status: 'in-progress'
       },
       {
         name: "Jane Smith",
@@ -65,8 +63,7 @@ export const projects: Project[] = [
         specialty: "Urban Planner",
         company: "Urban Planning Co",
         quote: 18000,
-        status: 'completed',
-        groups: ['planners']
+        status: 'completed'
       }
     ],
   },
@@ -86,8 +83,7 @@ export const projects: Project[] = [
         specialty: "Landscape Architect",
         company: "Green Spaces Design",
         quote: 20000,
-        status: 'on-hold',
-        groups: ['landscapeArchitects']
+        status: 'on-hold'
       }
     ],
   },
@@ -103,8 +99,7 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         phone: "(555) 123-4567",
         specialty: "UI/UX Design",
         company: "Tech Solutions Inc",
-        address: "123 Main St, City, State",
-        groups: ['engineers', 'planners']
+        address: "123 Main St, City, State"
       },
       {
         name: "Sarah Wilson",
@@ -112,8 +107,7 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         phone: "(555) 345-6789",
         specialty: "Civil Engineer",
         company: "Build Better Ltd",
-        address: "456 Oak Ave, City, State",
-        groups: ['engineers']
+        address: "456 Oak Ave, City, State"
       },
     ],
   },
@@ -126,8 +120,7 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         phone: "(555) 234-5678",
         specialty: "Urban Planner",
         company: "Urban Planning Co",
-        address: "789 Pine Rd, City, State",
-        groups: ['planners']
+        address: "789 Pine Rd, City, State"
       },
     ],
   },
@@ -140,8 +133,7 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         phone: "(555) 456-7890",
         specialty: "Landscape Architect",
         company: "Green Spaces Design",
-        address: "321 Elm St, City, State",
-        groups: ['landscapeArchitects']
+        address: "321 Elm St, City, State"
       },
     ],
   },

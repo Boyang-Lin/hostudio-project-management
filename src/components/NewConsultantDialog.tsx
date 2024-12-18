@@ -2,18 +2,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
-import { ConsultantGroup } from "../data/mockData";
 
 interface NewConsultantDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (data: any) => void;
-  groups: Record<string, ConsultantGroup>;
 }
 
-export function NewConsultantDialog({ open, onOpenChange, onSave, groups }: NewConsultantDialogProps) {
+export function NewConsultantDialog({ open, onOpenChange, onSave }: NewConsultantDialogProps) {
   const form = useForm({
     defaultValues: {
       name: "",
@@ -22,7 +19,6 @@ export function NewConsultantDialog({ open, onOpenChange, onSave, groups }: NewC
       specialty: "",
       company: "",
       address: "",
-      groups: [] as string[],
     },
   });
 
@@ -109,33 +105,6 @@ export function NewConsultantDialog({ open, onOpenChange, onSave, groups }: NewC
                   <FormControl>
                     <Input placeholder="Enter address" {...field} />
                   </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="groups"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Groups</FormLabel>
-                  <div className="space-y-2">
-                    {Object.entries(groups).map(([key, group]) => (
-                      <div key={key} className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={form.watch('groups').includes(key)}
-                          onCheckedChange={(checked) => {
-                            const currentGroups = form.watch('groups');
-                            if (checked) {
-                              form.setValue('groups', [...currentGroups, key]);
-                            } else {
-                              form.setValue('groups', currentGroups.filter(g => g !== key));
-                            }
-                          }}
-                        />
-                        <span>{group.title}</span>
-                      </div>
-                    ))}
-                  </div>
                 </FormItem>
               )}
             />
