@@ -7,4 +7,5 @@ export interface Project {
   client_phone: string;
   construction_cost: number;
   created_at: string;
+  user_id: string;
 }
