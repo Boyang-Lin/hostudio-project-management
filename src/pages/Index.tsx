@@ -117,17 +117,33 @@ export default function Index() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
 
+      // Transform camelCase to snake_case for database
+      const projectData = {
+        title: newProject.title,
+        client_name: newProject.clientName,
+        client_email: newProject.clientEmail,
+        client_phone: newProject.clientPhone,
+        construction_cost: newProject.constructionCost,
+        owner_id: user.id
+      };
+
+      console.log('Adding new project:', projectData); // Debug log
+
       const { error } = await supabase
         .from('projects')
-        .insert([{ ...newProject, owner_id: user.id }]);
+        .insert([projectData]);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding project:', error); // Debug log
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success('Project added successfully');
     },
     onError: (error) => {
+      console.error('Project mutation error:', error); // Debug log
       toast.error('Failed to add project: ' + error.message);
     }
   });
