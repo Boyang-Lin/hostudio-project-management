@@ -5,10 +5,27 @@ import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { useForm } from "react-hook-form";
 import { projects, consultantGroups, Project, Consultant } from "../data/mockData";
 import { ProjectEditDialog } from "@/components/ProjectEditDialog";
 import { ConsultantEditDialog } from "@/components/ConsultantEditDialog";
 import { ConsultantGroupSelect } from "@/components/ConsultantGroupSelect";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 export default function Index() {
   const { toast } = useToast();
