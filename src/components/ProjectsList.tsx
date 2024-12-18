@@ -60,26 +60,27 @@ export function ProjectsList({ projects, onProjectsChange, onNewProject }: Proje
           <div key={project.id} className="relative group">
             <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
               <Button
-                size="icon"
-                variant="secondary"
-                className="h-8 w-8 bg-white/90 hover:bg-white shadow-sm"
+                variant="ghost"
+                size="sm"
                 onClick={(e) => {
                   e.preventDefault();
                   setEditingProject(project);
                 }}
               >
                 <Pencil className="h-4 w-4" />
+                Edit
               </Button>
               <Button
-                size="icon"
-                variant="destructive"
-                className="h-8 w-8"
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive"
                 onClick={(e) => {
                   e.preventDefault();
                   setDeletingProject(project);
                 }}
               >
                 <Trash2 className="h-4 w-4" />
+                Delete
               </Button>
             </div>
             <Link to={`/project/${project.id}`}>
