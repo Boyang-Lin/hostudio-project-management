@@ -52,11 +52,14 @@ const ProjectDetail = () => {
         .eq("project_id", id);
       if (error) throw new Error(error.message);
       return data.map(transformDatabaseConsultant);
-    },
-    onSuccess: (data) => {
-      setConsultants(data);
     }
   });
+
+  useEffect(() => {
+    if (consultantsData) {
+      setConsultants(consultantsData);
+    }
+  }, [consultantsData]);
 
   const mutation = useMutation({
     mutationFn: async (newConsultant: BaseConsultant) => {
@@ -109,7 +112,6 @@ const ProjectDetail = () => {
         constructionCost={project.construction_cost}
       />
       <ConsultantGroupSelect
-        consultants={consultants}
         selectedConsultant={selectedConsultant}
         setSelectedConsultant={setSelectedConsultant}
         onAddConsultant={handleAddConsultant}
@@ -120,14 +122,29 @@ const ProjectDetail = () => {
           <TabsTrigger value="payment">Payment</TabsTrigger>
         </TabsList>
         <TabsContent value="engagement">
-          <EngagementTabContent consultants={consultants} tasks={tasks} />
+          <EngagementTabContent 
+            selectedConsultants={consultants}
+            quotes={{}}
+            onConsultantClick={() => {}}
+            onStatusChange={() => {}}
+          />
         </TabsContent>
         <TabsContent value="payment">
-          <PaymentManagement projectId={id!} />
+          <PaymentManagement />
         </TabsContent>
       </Tabs>
-      <ConsultantsList consultants={consultants} />
-      <ConsultantTasks tasks={tasks} />
+      <ConsultantsList />
+      <ConsultantTasks 
+        consultant={selectedConsultant || {
+          name: '',
+          email: '',
+          phone: '',
+          specialty: '',
+          company: '',
+          address: ''
+        }}
+        onClose={() => {}}
+      />
     </div>
   );
 };

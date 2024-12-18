@@ -17,8 +17,9 @@ export interface DatabaseConsultant {
   email: string;
   name: string;
   specialty: string;
-  quote: number;
-  status?: 'in-progress' | 'completed' | 'on-hold';
+  quote: number | null;
+  status: 'in-progress' | 'completed' | 'on-hold';
+  created_at: string;
 }
 
 // Transform database consultant to frontend format
@@ -27,7 +28,7 @@ export const transformDatabaseConsultant = (consultant: DatabaseConsultant): Pro
   email: consultant.email,
   specialty: consultant.specialty,
   quote: consultant.quote || 0,
-  status: consultant.status as 'in-progress' | 'completed' | 'on-hold' | undefined,
+  status: consultant.status,
   phone: 'N/A', // Default value
   company: 'N/A', // Default value
   address: 'N/A' // Default value
@@ -40,5 +41,6 @@ export const transformToDatabase = (projectId: string, consultant: BaseConsultan
   name: consultant.name,
   specialty: consultant.specialty,
   quote: 0, // Default value
-  status: 'in-progress' // Default value
+  status: 'in-progress', // Default value
+  created_at: new Date().toISOString()
 });
