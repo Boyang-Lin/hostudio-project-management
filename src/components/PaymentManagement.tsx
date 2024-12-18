@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Payment, Consultant } from "../data/mockData";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 interface PaymentManagementProps {
   consultants: Consultant[];
@@ -11,6 +12,7 @@ interface PaymentManagementProps {
 
 export function PaymentManagement({ consultants }: PaymentManagementProps) {
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [newInvoiceAmount, setNewInvoiceAmount] = useState<{ [key: string]: number }>({});
 
   const totalQuote = consultants.reduce((sum, consultant) => sum + consultant.quote, 0);
   const totalInvoiced = payments.reduce((sum, payment) => sum + payment.amount, 0);
@@ -19,13 +21,29 @@ export function PaymentManagement({ consultants }: PaymentManagementProps) {
     .reduce((sum, payment) => sum + payment.amount, 0);
 
   const handleCreateInvoice = (consultant: Consultant) => {
+    const amount = newInvoiceAmount[consultant.email];
+    if (!amount || amount <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    const totalInvoicedForConsultant = payments
+      .filter(p => p.consultantEmail === consultant.email)
+      .reduce((sum, payment) => sum + payment.amount, 0);
+
+    if (totalInvoicedForConsultant + amount > consultant.quote) {
+      toast.error(`Total invoiced amount cannot exceed the quote (${consultant.quote})`);
+      return;
+    }
+
     const newPayment: Payment = {
       consultantEmail: consultant.email,
-      amount: consultant.quote,
+      amount: amount,
       status: 'pending',
       invoiceDate: new Date().toISOString().split('T')[0],
     };
     setPayments(prev => [...prev, newPayment]);
+    setNewInvoiceAmount(prev => ({ ...prev, [consultant.email]: 0 }));
     toast.success(`Invoice created for ${consultant.name}`);
   };
 
@@ -38,6 +56,13 @@ export function PaymentManagement({ consultants }: PaymentManagementProps) {
       )
     );
     toast.success(`Payment marked as paid`);
+  };
+
+  const getRemainingQuote = (consultant: Consultant) => {
+    const totalInvoiced = payments
+      .filter(p => p.consultantEmail === consultant.email)
+      .reduce((sum, payment) => sum + payment.amount, 0);
+    return consultant.quote - totalInvoiced;
   };
 
   return (
@@ -68,6 +93,8 @@ export function PaymentManagement({ consultants }: PaymentManagementProps) {
         <h3 className="text-lg font-semibold">Consultant Payments</h3>
         {consultants.map((consultant) => {
           const consultantPayments = payments.filter(p => p.consultantEmail === consultant.email);
+          const remainingQuote = getRemainingQuote(consultant);
+          
           return (
             <Card key={consultant.email}>
               <CardContent className="pt-6">
@@ -75,13 +102,26 @@ export function PaymentManagement({ consultants }: PaymentManagementProps) {
                   <div>
                     <p className="font-semibold">{consultant.name}</p>
                     <p className="text-sm text-gray-500">Quote: ${consultant.quote.toLocaleString()}</p>
+                    <p className="text-sm text-gray-500">Remaining: ${remainingQuote.toLocaleString()}</p>
                   </div>
-                  <Button
-                    onClick={() => handleCreateInvoice(consultant)}
-                    disabled={consultantPayments.length > 0}
-                  >
-                    Create Invoice
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Amount"
+                      className="w-32"
+                      value={newInvoiceAmount[consultant.email] || ''}
+                      onChange={(e) => setNewInvoiceAmount(prev => ({
+                        ...prev,
+                        [consultant.email]: parseFloat(e.target.value)
+                      }))}
+                    />
+                    <Button
+                      onClick={() => handleCreateInvoice(consultant)}
+                      disabled={remainingQuote <= 0}
+                    >
+                      Create Invoice
+                    </Button>
+                  </div>
                 </div>
                 {consultantPayments.map((payment, index) => (
                   <div key={index} className="mt-4 flex items-center justify-between">
