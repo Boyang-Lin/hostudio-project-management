@@ -13,6 +13,14 @@ export default function Index() {
   const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
 
+  const handleNewConsultant = (newConsultant: any) => {
+    const newGroups = { ...localConsultantGroups };
+    newConsultant.groups.forEach((groupKey: string) => {
+      newGroups[groupKey].consultants.push(newConsultant);
+    });
+    setLocalConsultantGroups(newGroups);
+  };
+
   return (
     <div className="container mx-auto py-8 space-y-8">
       <ProjectsList
@@ -44,11 +52,8 @@ export default function Index() {
       <NewConsultantDialog
         open={showNewConsultantDialog}
         onOpenChange={setShowNewConsultantDialog}
-        onSave={(newConsultant) => {
-          const newGroups = { ...localConsultantGroups };
-          newGroups.engineers.consultants.push(newConsultant);
-          setLocalConsultantGroups(newGroups);
-        }}
+        onSave={handleNewConsultant}
+        groups={localConsultantGroups}
       />
 
       <NewGroupDialog
