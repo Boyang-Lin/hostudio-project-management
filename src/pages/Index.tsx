@@ -5,94 +5,7 @@ import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { Project, ProjectConsultant } from "../data/mockData";
-
-// Temporary mock data
-const projects: Project[] = [
-  {
-    id: "1",
-    title: "Website Redesign",
-    status: "active",
-    dueDate: "2024-04-30",
-    consultants: [
-      {
-        name: "John Doe",
-        email: "john@example.com",
-        phone: "(555) 123-4567",
-        specialty: "UI/UX Design",
-        quote: 15000
-      },
-      {
-        name: "Jane Smith",
-        email: "jane@example.com",
-        phone: "(555) 234-5678",
-        specialty: "Urban Planner",
-        quote: 18000
-      }
-    ],
-  },
-  {
-    id: "2",
-    title: "Mobile App Development",
-    status: "on-hold",
-    dueDate: "2024-05-15",
-    consultants: [
-      {
-        name: "Mike Johnson",
-        email: "mike@example.com",
-        phone: "(555) 456-7890",
-        specialty: "Landscape Architect",
-        quote: 20000
-      }
-    ],
-  },
-];
-
-const consultantGroups = {
-  engineers: {
-    title: "Engineers",
-    consultants: [
-      {
-        name: "John Doe",
-        email: "john@example.com",
-        phone: "(555) 123-4567",
-        specialty: "UI/UX Design",
-        quote: 15000,
-      },
-      {
-        name: "Sarah Wilson",
-        email: "sarah@example.com",
-        phone: "(555) 345-6789",
-        specialty: "Civil Engineer",
-        quote: 12000,
-      },
-    ],
-  },
-  planners: {
-    title: "Planners",
-    consultants: [
-      {
-        name: "Jane Smith",
-        email: "jane@example.com",
-        phone: "(555) 234-5678",
-        specialty: "Urban Planner",
-        quote: 18000,
-      },
-    ],
-  },
-  landscapeArchitects: {
-    title: "Landscape Architects",
-    consultants: [
-      {
-        name: "Mike Brown",
-        email: "mike@example.com",
-        phone: "(555) 456-7890",
-        specialty: "Landscape Architect",
-        quote: 20000,
-      },
-    ],
-  },
-};
+import { projects, consultantGroups } from "../data/mockData";
 
 export default function Index() {
   const { toast } = useToast();
@@ -142,7 +55,10 @@ export default function Index() {
             <h3 className="text-xl font-semibold mb-4">{group.title}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {group.consultants.map((consultant) => (
-                <ConsultantCard key={consultant.email} {...consultant} />
+                <ConsultantCard 
+                  key={consultant.email} 
+                  {...consultant}
+                />
               ))}
             </div>
           </div>
