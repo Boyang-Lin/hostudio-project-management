@@ -3,7 +3,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
-import { Project } from "../types/project";
+import { Project } from "../data/mockData";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
@@ -23,10 +23,10 @@ export function ProjectEditDialog({
   const form = useForm({
     defaultValues: {
       title: "",
-      client_name: "",
-      client_email: "",
-      client_phone: "",
-      construction_cost: 0,
+      clientName: "",
+      clientEmail: "",
+      clientPhone: "",
+      constructionCost: 0,
     },
   });
 
@@ -34,10 +34,10 @@ export function ProjectEditDialog({
     if (project) {
       form.reset({
         title: project.title,
-        client_name: project.client_name,
-        client_email: project.client_email,
-        client_phone: project.client_phone,
-        construction_cost: project.construction_cost,
+        clientName: project.clientName,
+        clientEmail: project.clientEmail,
+        clientPhone: project.clientPhone,
+        constructionCost: project.constructionCost,
       });
     }
   }, [project, form]);
@@ -70,7 +70,7 @@ export function ProjectEditDialog({
             />
             <FormField
               control={form.control}
-              name="client_name"
+              name="clientName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Client Name</FormLabel>
@@ -82,7 +82,7 @@ export function ProjectEditDialog({
             />
             <FormField
               control={form.control}
-              name="client_email"
+              name="clientEmail"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Client Email</FormLabel>
@@ -94,7 +94,7 @@ export function ProjectEditDialog({
             />
             <FormField
               control={form.control}
-              name="client_phone"
+              name="clientPhone"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Client Phone</FormLabel>
@@ -106,7 +106,7 @@ export function ProjectEditDialog({
             />
             <FormField
               control={form.control}
-              name="construction_cost"
+              name="constructionCost"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Construction Cost</FormLabel>

@@ -1,98 +1,89 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { AuthForm } from "@/components/auth/AuthForm";
-import { Dashboard } from "@/components/dashboard/Dashboard";
-import { useNavigate } from 'react-router-dom';
-import { toast } from "sonner";
+import { projects as initialProjects, consultantGroups as initialConsultantGroups } from "../data/mockData";
+import { ProjectsList } from "@/components/ProjectsList";
+import { ConsultantsList } from "@/components/ConsultantsList";
+import { NewProjectDialog } from "@/components/NewProjectDialog";
+import { NewConsultantDialog } from "@/components/NewConsultantDialog";
+import { NewGroupDialog } from "@/components/NewGroupDialog";
 
 export default function Index() {
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [localProjects, setLocalProjects] = useState(() => {
+    const savedProjects = localStorage.getItem('projects');
+    return savedProjects ? JSON.parse(savedProjects) : initialProjects;
+  });
+
+  const [localConsultantGroups, setLocalConsultantGroups] = useState(() => {
+    const savedGroups = localStorage.getItem('consultantGroups');
+    return savedGroups ? JSON.parse(savedGroups) : initialConsultantGroups;
+  });
+
+  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
+  const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
+  const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    localStorage.setItem('projects', JSON.stringify(localProjects));
+  }, [localProjects]);
 
   useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
+    localStorage.setItem('consultantGroups', JSON.stringify(localConsultantGroups));
+  }, [localConsultantGroups]);
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) {
-        toast.success("Successfully signed in!");
-      }
-    });
+  return (
+    <div className="container mx-auto py-8 space-y-8">
+      <ProjectsList
+        projects={localProjects}
+        onProjectsChange={setLocalProjects}
+        onNewProject={() => setShowNewProjectDialog(true)}
+      />
 
-    return () => subscription.unsubscribe();
-  }, []);
+      <ConsultantsList
+        consultantGroups={localConsultantGroups}
+        onConsultantGroupsChange={setLocalConsultantGroups}
+        onNewConsultant={() => setShowNewConsultantDialog(true)}
+        onNewGroup={() => setShowNewGroupDialog(true)}
+      />
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+      <NewProjectDialog
+        open={showNewProjectDialog}
+        onOpenChange={setShowNewProjectDialog}
+        onSave={(newProject) => {
+          setLocalProjects([...localProjects, {
+            id: (localProjects.length + 1).toString(),
+            status: "active",
+            consultants: [],
+            ...newProject
+          }]);
+        }}
+      />
 
-  if (!session) {
-    return (
-      <div className="flex flex-col md:flex-row gap-8 justify-center items-start p-8">
-        <div className="w-full md:w-96">
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold text-center mb-6">Sign In</h2>
-            <Auth
-              supabaseClient={supabase}
-              appearance={{ 
-                theme: ThemeSupa,
-                variables: {
-                  default: {
-                    colors: {
-                      brand: '#2563eb',
-                      brandAccent: '#1d4ed8',
-                    },
-                  },
-                },
-              }}
-              view="sign_in"
-              providers={[]}
-              redirectTo={window.location.origin}
-              theme="light"
-            />
-          </div>
-        </div>
-        <div className="w-full md:w-96">
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
-            <Auth
-              supabaseClient={supabase}
-              appearance={{ 
-                theme: ThemeSupa,
-                variables: {
-                  default: {
-                    colors: {
-                      brand: '#2563eb',
-                      brandAccent: '#1d4ed8',
-                    },
-                  },
-                },
-              }}
-              view="sign_up"
-              providers={[]}
-              redirectTo={window.location.origin}
-              theme="light"
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
+      <NewConsultantDialog
+        open={showNewConsultantDialog}
+        onOpenChange={setShowNewConsultantDialog}
+        groups={localConsultantGroups}
+        onSave={(newConsultant) => {
+          const groupKey = newConsultant.group;
+          const { group, ...consultantData } = newConsultant;
+          const newGroups = { ...localConsultantGroups };
+          newGroups[groupKey].consultants.push(consultantData);
+          setLocalConsultantGroups(newGroups);
+        }}
+      />
 
-  return <Dashboard />;
+      <NewGroupDialog
+        open={showNewGroupDialog}
+        onOpenChange={setShowNewGroupDialog}
+        onSave={(groupName) => {
+          setLocalConsultantGroups({
+            ...localConsultantGroups,
+            [groupName.toLowerCase()]: {
+              title: groupName,
+              consultants: [],
+            },
+          });
+        }}
+      />
+    </div>
+  );
 }

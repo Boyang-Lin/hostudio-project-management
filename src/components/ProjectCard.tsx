@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Users, Timer, CheckCircle2, Pause, Mail, Phone, DollarSign, User } from "lucide-react";
+import { ProjectConsultant } from "../data/mockData";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -13,10 +14,11 @@ interface ProjectCardProps {
   id?: string;
   title: string;
   status: "active" | "completed" | "on-hold";
-  client_name: string;
-  client_email: string;
-  client_phone: string;
-  construction_cost: number;
+  consultants: ProjectConsultant[];
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  constructionCost: number;
   onStatusChange?: (status: "active" | "completed" | "on-hold") => void;
 }
 
@@ -52,10 +54,11 @@ const getStatusDetails = (status: string) => {
 export function ProjectCard({ 
   title, 
   status, 
-  client_name,
-  client_email,
-  client_phone,
-  construction_cost,
+  consultants, 
+  clientName,
+  clientEmail,
+  clientPhone,
+  constructionCost,
   onStatusChange 
 }: ProjectCardProps) {
   const currentStatus = getStatusDetails(status);
@@ -87,19 +90,23 @@ export function ProjectCard({
         <div className="flex flex-col space-y-2">
           <div className="flex items-center text-sm text-gray-600">
             <User className="mr-2 h-4 w-4" />
-            {client_name}
+            {clientName}
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <Mail className="mr-2 h-4 w-4" />
-            {client_email}
+            {clientEmail}
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <Phone className="mr-2 h-4 w-4" />
-            {client_phone}
+            {clientPhone}
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <DollarSign className="mr-2 h-4 w-4" />
-            {formatCurrency(construction_cost)}
+            {formatCurrency(constructionCost)}
+          </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <Users className="mr-2 h-4 w-4" />
+            {consultants.length} Consultant{consultants.length !== 1 ? "s" : ""}
           </div>
         </div>
       </CardContent>

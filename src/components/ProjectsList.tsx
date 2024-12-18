@@ -1,105 +1,51 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Project } from "@/data/mockData";
 import { ProjectCard } from "./ProjectCard";
 import { ProjectEditDialog } from "./ProjectEditDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { Button } from "./ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { Project } from "@/types/project";
 
 interface ProjectsListProps {
+  projects: Project[];
+  onProjectsChange: (projects: Project[]) => void;
   onNewProject: () => void;
 }
 
-export function ProjectsList({ onNewProject }: ProjectsListProps) {
+export function ProjectsList({ projects, onProjectsChange, onNewProject }: ProjectsListProps) {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deletingProject, setDeletingProject] = useState<Project | null>(null);
-  const queryClient = useQueryClient();
-
-  const { data: projects = [], isLoading } = useQuery({
-    queryKey: ['projects'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        toast.error('Failed to fetch projects');
-        throw error;
-      }
-      return data as Project[];
-    },
-  });
-
-  const updateProjectMutation = useMutation({
-    mutationFn: async (updatedProject: Partial<Project> & { id: string }) => {
-      const { error } = await supabase
-        .from('projects')
-        .update(updatedProject)
-        .eq('id', updatedProject.id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success("Project updated successfully");
-      setEditingProject(null);
-    },
-    onError: (error) => {
-      toast.error("Failed to update project");
-      console.error('Update error:', error);
-    },
-  });
-
-  const deleteProjectMutation = useMutation({
-    mutationFn: async (projectId: string) => {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', projectId);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success("Project deleted successfully");
-      setDeletingProject(null);
-    },
-    onError: (error) => {
-      toast.error("Failed to delete project");
-      console.error('Delete error:', error);
-    },
-  });
 
   const handleProjectUpdate = (updatedProject: Partial<Project>) => {
-    if (editingProject) {
-      updateProjectMutation.mutate({
-        id: editingProject.id,
-        ...updatedProject
-      });
-    }
+    onProjectsChange(
+      projects.map(p =>
+        p.id === editingProject?.id
+          ? { ...p, ...updatedProject }
+          : p
+      )
+    );
+    toast.success("Project updated successfully");
   };
 
   const handleStatusChange = (projectId: string, newStatus: "active" | "completed" | "on-hold") => {
-    updateProjectMutation.mutate({
-      id: projectId,
-      status: newStatus
-    });
+    onProjectsChange(
+      projects.map(p =>
+        p.id === projectId
+          ? { ...p, status: newStatus }
+          : p
+      )
+    );
   };
 
   const handleDeleteProject = () => {
     if (deletingProject) {
-      deleteProjectMutation.mutate(deletingProject.id);
+      onProjectsChange(projects.filter(p => p.id !== deletingProject.id));
+      setDeletingProject(null);
+      toast.success("Project deleted successfully");
     }
   };
-
-  if (isLoading) {
-    return <div className="text-center py-8">Loading projects...</div>;
-  }
 
   return (
     <div className="space-y-6">
@@ -109,25 +55,43 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
           <Plus className="mr-2 h-4 w-4" /> New Project
         </Button>
       </div>
-      
-      {projects.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          No projects yet. Create your first project to get started!
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <div key={project.id} className="relative group">
-              <Link to={`/project/${project.id}`}>
-                <ProjectCard 
-                  {...project}
-                  onStatusChange={(newStatus) => handleStatusChange(project.id, newStatus)}
-                />
-              </Link>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {projects.map((project) => (
+          <div key={project.id} className="relative group">
+            <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setEditingProject(project);
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+                Edit
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setDeletingProject(project);
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
             </div>
-          ))}
-        </div>
-      )}
+            <Link to={`/project/${project.id}`}>
+              <ProjectCard 
+                {...project} 
+                onStatusChange={(newStatus) => handleStatusChange(project.id, newStatus)}
+              />
+            </Link>
+          </div>
+        ))}
+      </div>
 
       <ProjectEditDialog
         project={editingProject}
