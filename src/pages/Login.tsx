@@ -38,7 +38,7 @@ export default function Login() {
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Welcome back
+            HO Studio Project Management
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             Please sign in to your account or request access
