@@ -7,18 +7,13 @@ import { ConsultantTasks } from "@/components/ConsultantTasks";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { consultantGroups, BaseConsultant, ProjectConsultant } from "../types/consultant";
+import { consultantGroups } from "@/data/mockData";
 import { PaymentManagement } from "@/components/PaymentManagement";
 import { EngagementTabContent } from "@/components/EngagementTabContent";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  DatabaseProject, 
-  DatabaseProjectConsultant,
-  transformDatabaseConsultant,
-  transformToDatabase
-} from "../types/project";
+import { transformDatabaseConsultant } from "../types/project";
 
 interface Task {
   id: string;
@@ -35,7 +30,7 @@ export default function ProjectDetail() {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("details");
-  const [selectedConsultant, setSelectedConsultant] = useState<BaseConsultant | null>(null);
+  const [selectedConsultant, setSelectedConsultant] = useState(null);
   const [consultantTasks, setConsultantTasks] = useState<ConsultantTasks>({});
 
   // Fetch project data
@@ -222,10 +217,15 @@ export default function ProjectDetail() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-4">Project Details</h1>
         <ProjectCard 
-          {...project} 
-          status={project.status} 
-          onStatusChange={handleProjectStatusChange}
+          id={project.id}
+          title={project.title}
+          status={project.status}
           consultants={project.project_consultants}
+          clientName={project.client_name}
+          clientEmail={project.client_email}
+          clientPhone={project.client_phone}
+          constructionCost={project.construction_cost}
+          onStatusChange={handleProjectStatusChange}
         />
       </div>
 
