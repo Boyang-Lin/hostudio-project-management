@@ -3,7 +3,6 @@ import { ConsultantsList } from "@/components/ConsultantsList";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
 import { NewConsultantDialog } from "@/components/NewConsultantDialog";
 import { NewGroupDialog } from "@/components/NewGroupDialog";
-import { OrganizationManagement } from "@/components/organizations/OrganizationManagement";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,7 +91,6 @@ export const Dashboard = () => {
         <TabsList>
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="consultants">Consultants</TabsTrigger>
-          <TabsTrigger value="organizations">Organizations</TabsTrigger>
         </TabsList>
 
         <TabsContent value="projects">
@@ -108,10 +106,6 @@ export const Dashboard = () => {
             onNewConsultant={() => setShowNewConsultantDialog(true)}
             onNewGroup={() => setShowNewGroupDialog(true)}
           />
-        </TabsContent>
-
-        <TabsContent value="organizations">
-          <OrganizationManagement />
         </TabsContent>
       </Tabs>
 
