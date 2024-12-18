@@ -5,6 +5,9 @@ import { ConsultantsList } from "@/components/ConsultantsList";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
 import { NewConsultantDialog } from "@/components/NewConsultantDialog";
 import { NewGroupDialog } from "@/components/NewGroupDialog";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { LogOut } from "lucide-react";
 
 export default function Index() {
   const [localProjects, setLocalProjects] = useState<Project[]>(() => {
@@ -39,8 +42,19 @@ export default function Index() {
     setLocalProjects([...localProjects, project]);
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
     <div className="container mx-auto py-8 space-y-8">
+      <div className="flex justify-end mb-4">
+        <Button variant="outline" onClick={handleSignOut}>
+          <LogOut className="h-4 w-4 mr-2" />
+          Sign Out
+        </Button>
+      </div>
+
       <ProjectsList
         projects={localProjects}
         onProjectsChange={setLocalProjects}
