@@ -9,6 +9,8 @@ import { ArrowLeft, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { consultantGroups, projects, ProjectConsultant, Consultant } from "../data/mockData";
 import { PaymentManagement } from "@/components/PaymentManagement";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface Task {
   id: string;
@@ -30,17 +32,48 @@ export default function ProjectDetail() {
   const [activeTab, setActiveTab] = useState("details");
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null);
   const [consultantTasks, setConsultantTasks] = useState<ConsultantTasks>({});
+  const [quotes, setQuotes] = useState<{ [email: string]: number }>(() => {
+    const initialQuotes: { [email: string]: number } = {};
+    project?.consultants.forEach(consultant => {
+      initialQuotes[consultant.email] = consultant.quote;
+    });
+    return initialQuotes;
+  });
 
   if (!project) {
     return <div>Project not found</div>;
   }
 
   const handleConsultantToggle = (consultant: Consultant) => {
-    setSelectedConsultants((prev) =>
-      prev.some(c => c.email === consultant.email)
-        ? prev.filter((c) => c.email !== consultant.email)
-        : [...prev, { ...consultant, quote: 0 }]
-    );
+    setSelectedConsultants((prev) => {
+      if (prev.some(c => c.email === consultant.email)) {
+        return prev.filter((c) => c.email !== consultant.email);
+      } else {
+        const newConsultant: ProjectConsultant = {
+          ...consultant,
+          quote: quotes[consultant.email] || 0
+        };
+        return [...prev, newConsultant];
+      }
+    });
+  };
+
+  const handleQuoteChange = (email: string, value: string) => {
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue >= 0) {
+      setQuotes(prev => ({
+        ...prev,
+        [email]: numValue
+      }));
+      
+      setSelectedConsultants(prev => 
+        prev.map(consultant => 
+          consultant.email === email 
+            ? { ...consultant, quote: numValue }
+            : consultant
+        )
+      );
+    }
   };
 
   const handleConsultantClick = (consultant: Consultant) => {
@@ -55,11 +88,6 @@ export default function ProjectDetail() {
       }));
     }
   };
-
-  // Get selected consultants with their full information
-  const selectedConsultantsData = Object.values(consultantGroups)
-    .flatMap(group => group.consultants)
-    .filter(consultant => selectedConsultants.some(c => c.email === consultant.email));
 
   return (
     <div className="container mx-auto py-8">
@@ -90,42 +118,52 @@ export default function ProjectDetail() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {group.consultants.map((consultant) => (
-                    <div key={consultant.email} className="relative">
-                      <div className="absolute top-4 right-4 z-10">
-                        <Checkbox
-                          checked={selectedConsultants.some(c => c.email === consultant.email)}
-                          onCheckedChange={() =>
-                            handleConsultantToggle(consultant)
-                          }
-                        />
+                    <div key={consultant.email} className="space-y-2">
+                      <div className="relative">
+                        <div className="absolute top-4 right-4 z-10">
+                          <Checkbox
+                            checked={selectedConsultants.some(c => c.email === consultant.email)}
+                            onCheckedChange={() => handleConsultantToggle(consultant)}
+                          />
+                        </div>
+                        <ConsultantCard {...consultant} />
                       </div>
-                      <ConsultantCard {...consultant} />
+                      {selectedConsultants.some(c => c.email === consultant.email) && (
+                        <div className="px-4">
+                          <Input
+                            type="number"
+                            placeholder="Quote amount"
+                            value={quotes[consultant.email] || ''}
+                            onChange={(e) => handleQuoteChange(consultant.email, e.target.value)}
+                            className="w-full"
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
             ))}
           </div>
-          <Button className="w-full md:w-auto">Save Assignments</Button>
+          <Button 
+            className="w-full md:w-auto"
+            onClick={() => toast.success("Assignments saved successfully")}
+          >
+            Save Assignments
+          </Button>
         </TabsContent>
 
         <TabsContent value="engagement">
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Selected Consultants</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Object.entries(consultantGroups).map(([key, group]) => (
-                <div key={key} className="space-y-4">
-                  {group.consultants
-                    .filter(consultant => selectedConsultants.some(c => c.email === consultant.email))
-                    .map(consultant => (
-                      <div
-                        key={consultant.email}
-                        className="cursor-pointer"
-                        onClick={() => handleConsultantClick(consultant)}
-                      >
-                        <ConsultantCard {...consultant} />
-                      </div>
-                    ))}
+              {selectedConsultants.map((consultant) => (
+                <div
+                  key={consultant.email}
+                  className="cursor-pointer"
+                  onClick={() => handleConsultantClick(consultant)}
+                >
+                  <ConsultantCard {...consultant} quote={quotes[consultant.email]} />
                 </div>
               ))}
             </div>
@@ -133,7 +171,7 @@ export default function ProjectDetail() {
         </TabsContent>
 
         <TabsContent value="payments">
-          <PaymentManagement consultants={selectedConsultantsData} />
+          <PaymentManagement consultants={selectedConsultants} />
         </TabsContent>
       </Tabs>
 

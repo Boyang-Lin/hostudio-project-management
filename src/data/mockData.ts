@@ -5,13 +5,13 @@ export interface Consultant {
   specialty: string;
 }
 
+export interface ProjectConsultant extends Consultant {
+  quote: number;
+}
+
 export interface ConsultantGroup {
   title: string;
   consultants: Consultant[];
-}
-
-export interface ProjectConsultant extends Consultant {
-  quote: number;
 }
 
 export interface Project {
