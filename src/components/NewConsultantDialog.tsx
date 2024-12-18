@@ -4,6 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
+import { supabase } from "@/integrations/supabase/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface NewConsultantDialogProps {
   open: boolean;
@@ -12,7 +15,8 @@ interface NewConsultantDialogProps {
   groups: Record<string, { title: string; consultants: any[] }>;
 }
 
-export function NewConsultantDialog({ open, onOpenChange, onSave, groups }: NewConsultantDialogProps) {
+export function NewConsultantDialog({ open, onOpenChange, groups }: NewConsultantDialogProps) {
+  const queryClient = useQueryClient();
   const form = useForm({
     defaultValues: {
       name: "",
@@ -25,10 +29,50 @@ export function NewConsultantDialog({ open, onOpenChange, onSave, groups }: NewC
     },
   });
 
+  const addConsultantMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
+      const consultantData = {
+        name: data.name,
+        email: data.email,
+        phone: data.phone || 'N/A',
+        specialty: data.specialty || 'other',
+        company: data.company || 'N/A',
+        address: data.address || 'N/A',
+        group_id: data.group,
+        owner_id: user.id
+      };
+
+      console.log('Adding consultant with data:', consultantData);
+
+      const { data: result, error } = await supabase
+        .from('consultants')
+        .insert([consultantData])
+        .select();
+
+      if (error) {
+        console.error('Error adding consultant:', error);
+        throw error;
+      }
+
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['consultant_groups'] });
+      toast.success('Consultant added successfully');
+      onOpenChange(false);
+      form.reset();
+    },
+    onError: (error: Error) => {
+      console.error('Consultant mutation error:', error);
+      toast.error('Failed to add consultant: ' + error.message);
+    }
+  });
+
   const handleSubmit = (data: any) => {
-    onSave(data);
-    onOpenChange(false);
-    form.reset();
+    addConsultantMutation.mutate(data);
   };
 
   return (
@@ -81,9 +125,22 @@ export function NewConsultantDialog({ open, onOpenChange, onSave, groups }: NewC
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Specialty</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter specialty" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select specialty" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="structural">Structural</SelectItem>
+                      <SelectItem value="mechanical">Mechanical</SelectItem>
+                      <SelectItem value="electrical">Electrical</SelectItem>
+                      <SelectItem value="plumbing">Plumbing</SelectItem>
+                      <SelectItem value="architectural">Architectural</SelectItem>
+                      <SelectItem value="civil">Civil</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </FormItem>
               )}
             />
