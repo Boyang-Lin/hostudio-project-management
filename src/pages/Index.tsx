@@ -14,7 +14,6 @@ const projects = [
     status: "active" as const,
     dueDate: "2024-04-30",
     consultants: ["John Doe", "Jane Smith"],
-    quote: "$15,000",
   },
   {
     id: "2",
@@ -22,7 +21,6 @@ const projects = [
     status: "on-hold" as const,
     dueDate: "2024-05-15",
     consultants: ["Mike Johnson"],
-    quote: "$25,000",
   },
 ];
 
@@ -35,12 +33,14 @@ const consultantGroups = {
         email: "john@example.com",
         phone: "(555) 123-4567",
         specialty: "UI/UX Design",
+        quote: 15000,
       },
       {
         name: "Sarah Wilson",
         email: "sarah@example.com",
         phone: "(555) 345-6789",
         specialty: "Civil Engineer",
+        quote: 12000,
       },
     ],
   },
@@ -52,6 +52,7 @@ const consultantGroups = {
         email: "jane@example.com",
         phone: "(555) 234-5678",
         specialty: "Urban Planner",
+        quote: 18000,
       },
     ],
   },
@@ -63,6 +64,7 @@ const consultantGroups = {
         email: "mike@example.com",
         phone: "(555) 456-7890",
         specialty: "Landscape Architect",
+        quote: 20000,
       },
     ],
   },
