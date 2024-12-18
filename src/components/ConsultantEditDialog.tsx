@@ -2,38 +2,47 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { Consultant } from "../data/mockData";
 import { toast } from "sonner";
 
 interface ConsultantEditDialogProps {
   consultant: Consultant | null;
+  currentGroup: string;
+  groups: Record<string, { title: string; consultants: Consultant[] }>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (consultant: Consultant) => void;
+  onSave: (consultant: Consultant, newGroup: string) => void;
 }
 
 export function ConsultantEditDialog({
   consultant,
+  currentGroup,
+  groups,
   open,
   onOpenChange,
   onSave,
 }: ConsultantEditDialogProps) {
   const form = useForm({
-    defaultValues: consultant || {
+    defaultValues: {
+      ...consultant,
+      group: currentGroup,
+    } || {
       name: "",
       email: "",
       phone: "",
       specialty: "",
       company: "",
+      group: currentGroup,
     },
   });
 
-  const handleSubmit = (data: Consultant) => {
-    onSave(data);
+  const handleSubmit = (data: any) => {
+    const { group, ...consultantData } = data;
+    onSave(consultantData as Consultant, group);
     onOpenChange(false);
     form.reset();
-    toast.success("Consultant details updated successfully");
   };
 
   return (
@@ -101,6 +110,29 @@ export function ConsultantEditDialog({
                   <FormControl>
                     <Input placeholder="Enter company name" {...field} />
                   </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="group"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Group</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select group" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.entries(groups).map(([key, group]) => (
+                        <SelectItem key={key} value={key}>
+                          {group.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormItem>
               )}
             />

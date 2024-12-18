@@ -1,7 +1,6 @@
 import { Consultant } from "@/data/mockData";
 import { ConsultantCard } from "./ConsultantCard";
 import { ConsultantEditDialog } from "./ConsultantEditDialog";
-import { ConsultantGroupSelect } from "./ConsultantGroupSelect";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { Button } from "./ui/button";
 import { Plus, Trash2 } from "lucide-react";
@@ -21,39 +20,32 @@ export function ConsultantsList({
   onNewConsultant,
   onNewGroup,
 }: ConsultantsListProps) {
-  const [editingConsultant, setEditingConsultant] = useState<Consultant | null>(null);
+  const [editingConsultant, setEditingConsultant] = useState<{ consultant: Consultant; groupKey: string } | null>(null);
   const [deletingConsultant, setDeletingConsultant] = useState<{ consultant: Consultant; group: string } | null>(null);
 
-  const handleConsultantUpdate = (updatedConsultant: Consultant) => {
+  const handleConsultantUpdate = (updatedConsultant: Consultant, newGroupKey: string) => {
     const newGroups = { ...consultantGroups };
-    Object.keys(newGroups).forEach(groupKey => {
-      newGroups[groupKey].consultants = newGroups[groupKey].consultants.map(c =>
-        c.email === editingConsultant?.email ? updatedConsultant : c
-      );
-    });
+    
+    // If group changed, remove from old group and add to new group
+    if (editingConsultant && editingConsultant.groupKey !== newGroupKey) {
+      newGroups[editingConsultant.groupKey].consultants = newGroups[editingConsultant.groupKey].consultants
+        .filter(c => c.email !== editingConsultant.consultant.email);
+      newGroups[newGroupKey].consultants.push(updatedConsultant);
+    } else if (editingConsultant) {
+      // Just update the consultant in the current group
+      newGroups[editingConsultant.groupKey].consultants = newGroups[editingConsultant.groupKey].consultants
+        .map(c => c.email === editingConsultant.consultant.email ? updatedConsultant : c);
+    }
+    
     onConsultantGroupsChange(newGroups);
     toast.success("Consultant updated successfully");
-  };
-
-  const handleGroupChange = (email: string, newGroup: string, oldGroup: string) => {
-    const newGroups = { ...consultantGroups };
-    const consultant = newGroups[oldGroup].consultants.find(c => c.email === email);
-    if (consultant) {
-      newGroups[oldGroup].consultants = newGroups[oldGroup].consultants.filter(
-        c => c.email !== email
-      );
-      newGroups[newGroup].consultants.push(consultant);
-      onConsultantGroupsChange(newGroups);
-      toast.success("Consultant moved to new group");
-    }
   };
 
   const handleDeleteConsultant = () => {
     if (deletingConsultant) {
       const newGroups = { ...consultantGroups };
-      newGroups[deletingConsultant.group].consultants = newGroups[deletingConsultant.group].consultants.filter(
-        c => c.email !== deletingConsultant.consultant.email
-      );
+      newGroups[deletingConsultant.group].consultants = newGroups[deletingConsultant.group].consultants
+        .filter(c => c.email !== deletingConsultant.consultant.email);
       onConsultantGroupsChange(newGroups);
       setDeletingConsultant(null);
       toast.success("Consultant deleted successfully");
@@ -80,11 +72,11 @@ export function ConsultantsList({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {group.consultants.map((consultant) => (
               <div key={consultant.email} className="relative group">
-                <div className="absolute top-2 right-2 z-10 space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-2 right-2 z-10 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 p-1 rounded">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setEditingConsultant(consultant)}
+                    onClick={() => setEditingConsultant({ consultant, groupKey: key })}
                   >
                     Edit
                   </Button>
@@ -97,14 +89,6 @@ export function ConsultantsList({
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="mb-2">
-                  <ConsultantGroupSelect
-                    consultantEmail={consultant.email}
-                    currentGroup={key}
-                    groups={consultantGroups}
-                    onGroupChange={handleGroupChange}
-                  />
-                </div>
                 <ConsultantCard {...consultant} />
               </div>
             ))}
@@ -113,7 +97,9 @@ export function ConsultantsList({
       ))}
 
       <ConsultantEditDialog
-        consultant={editingConsultant}
+        consultant={editingConsultant?.consultant || null}
+        currentGroup={editingConsultant?.groupKey || ''}
+        groups={consultantGroups}
         open={!!editingConsultant}
         onOpenChange={(open) => !open && setEditingConsultant(null)}
         onSave={handleConsultantUpdate}
