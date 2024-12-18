@@ -14,7 +14,7 @@ export function useOrganizationMembers(selectedOrg: Organization | null) {
         .select(`
           user_id,
           role,
-          profiles:profiles!inner (
+          profiles (
             username
           )
         `)
