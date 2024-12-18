@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ProjectCard } from "@/components/ProjectCard";
 import { ConsultantCard } from "@/components/ConsultantCard";
+import { ConsultantTasks } from "@/components/ConsultantTasks";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -76,6 +77,7 @@ export default function ProjectDetail() {
     project?.consultants || []
   );
   const [activeTab, setActiveTab] = useState("details");
+  const [selectedConsultant, setSelectedConsultant] = useState<any>(null);
 
   if (!project) {
     return <div>Project not found</div>;
@@ -87,6 +89,10 @@ export default function ProjectDetail() {
         ? prev.filter((name) => name !== consultantName)
         : [...prev, consultantName]
     );
+  };
+
+  const handleConsultantClick = (consultant: any) => {
+    setSelectedConsultant(consultant);
   };
 
   return (
@@ -121,7 +127,9 @@ export default function ProjectDetail() {
                       <div className="absolute top-4 right-4 z-10">
                         <Checkbox
                           checked={selectedConsultants.includes(consultant.name)}
-                          onCheckedChange={() => handleConsultantToggle(consultant.name)}
+                          onCheckedChange={() =>
+                            handleConsultantToggle(consultant.name)
+                          }
                         />
                       </div>
                       <ConsultantCard {...consultant} />
@@ -142,9 +150,17 @@ export default function ProjectDetail() {
                 const consultant = Object.values(consultantGroups)
                   .flatMap((group) => group.consultants)
                   .find((c) => c.name === consultantName);
-                
+
                 if (consultant) {
-                  return <ConsultantCard key={consultant.email} {...consultant} />;
+                  return (
+                    <div
+                      key={consultant.email}
+                      className="cursor-pointer"
+                      onClick={() => handleConsultantClick(consultant)}
+                    >
+                      <ConsultantCard {...consultant} />
+                    </div>
+                  );
                 }
                 return null;
               })}
@@ -152,6 +168,17 @@ export default function ProjectDetail() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {selectedConsultant && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-background rounded-lg w-full max-w-2xl">
+            <ConsultantTasks
+              consultant={selectedConsultant}
+              onClose={() => setSelectedConsultant(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
