@@ -13,22 +13,33 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          organization_id: string | null
           title: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          organization_id?: string | null
           title: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          organization_id?: string | null
           title?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "consultant_groups_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       consultants: {
         Row: {
@@ -38,6 +49,7 @@ export type Database = {
           email: string
           id: string
           name: string
+          organization_id: string | null
           phone: string
           specialty: string
           user_id: string
@@ -49,6 +61,7 @@ export type Database = {
           email: string
           id?: string
           name: string
+          organization_id?: string | null
           phone: string
           specialty: string
           user_id: string
@@ -60,9 +73,68 @@ export type Database = {
           email?: string
           id?: string
           name?: string
+          organization_id?: string | null
           phone?: string
           specialty?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultants_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_members: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -137,6 +209,7 @@ export type Database = {
           construction_cost: number
           created_at: string
           id: string
+          organization_id: string | null
           status: string
           title: string
           user_id: string
@@ -148,6 +221,7 @@ export type Database = {
           construction_cost: number
           created_at?: string
           id?: string
+          organization_id?: string | null
           status: string
           title: string
           user_id: string
@@ -159,11 +233,20 @@ export type Database = {
           construction_cost?: number
           created_at?: string
           id?: string
+          organization_id?: string | null
           status?: string
           title?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "projects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

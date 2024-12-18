@@ -8,4 +8,5 @@ export interface Project {
   construction_cost: number;
   created_at: string;
   user_id: string;
+  organization_id?: string;
 }

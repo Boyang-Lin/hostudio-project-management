@@ -21,22 +21,38 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
   const [deletingProject, setDeletingProject] = useState<Project | null>(null);
   const queryClient = useQueryClient();
 
+  // Updated query to handle both personal and organization projects
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // First, get user's organization memberships
+      const { data: memberships, error: membershipError } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', user.id);
+
+      if (membershipError) {
+        console.error('Error fetching memberships:', membershipError);
+      }
+
+      const organizationIds = memberships?.map(m => m.organization_id) || [];
+
+      // Fetch both personal projects and organization projects
       const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .eq('user_id', user.id)
+        .or(`user_id.eq.${user.id},organization_id.in.(${organizationIds.join(',')})`)
         .order('created_at', { ascending: false });
       
       if (error) {
+        console.error('Error fetching projects:', error);
         toast.error('Failed to fetch projects');
         throw error;
       }
+
       return data as Project[];
     },
   });
@@ -56,8 +72,8 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
       setEditingProject(null);
     },
     onError: (error) => {
-      toast.error("Failed to update project");
       console.error('Update error:', error);
+      toast.error("Failed to update project");
     },
   });
 
@@ -76,8 +92,8 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
       setDeletingProject(null);
     },
     onError: (error) => {
-      toast.error("Failed to delete project");
       console.error('Delete error:', error);
+      toast.error("Failed to delete project");
     },
   });
 
