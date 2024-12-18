@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { projects as initialProjects, consultantGroups as initialConsultantGroups } from "../data/mockData";
+import { projects as initialProjects, consultantGroups as initialConsultantGroups, Project } from "../data/mockData";
 import { ProjectsList } from "@/components/ProjectsList";
 import { ConsultantsList } from "@/components/ConsultantsList";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
@@ -7,7 +7,7 @@ import { NewConsultantDialog } from "@/components/NewConsultantDialog";
 import { NewGroupDialog } from "@/components/NewGroupDialog";
 
 export default function Index() {
-  const [localProjects, setLocalProjects] = useState(() => {
+  const [localProjects, setLocalProjects] = useState<Project[]>(() => {
     const savedProjects = localStorage.getItem('projects');
     return savedProjects ? JSON.parse(savedProjects) : initialProjects;
   });
@@ -21,7 +21,6 @@ export default function Index() {
   const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
 
-  // Save to localStorage whenever data changes
   useEffect(() => {
     localStorage.setItem('projects', JSON.stringify(localProjects));
   }, [localProjects]);
@@ -29,6 +28,16 @@ export default function Index() {
   useEffect(() => {
     localStorage.setItem('consultantGroups', JSON.stringify(localConsultantGroups));
   }, [localConsultantGroups]);
+
+  const handleNewProject = (newProject: Omit<Project, 'id'>) => {
+    const project: Project = {
+      ...newProject,
+      id: (localProjects.length + 1).toString(),
+      status: "active" as const,
+      consultants: []
+    };
+    setLocalProjects([...localProjects, project]);
+  };
 
   return (
     <div className="container mx-auto py-8 space-y-8">
@@ -39,7 +48,7 @@ export default function Index() {
       />
 
       <ConsultantsList
-        consultantGroups={localConsultantGroups}
+        consultantGroups={localConsultantGroups || {}}
         onConsultantGroupsChange={setLocalConsultantGroups}
         onNewConsultant={() => setShowNewConsultantDialog(true)}
         onNewGroup={() => setShowNewGroupDialog(true)}
@@ -48,14 +57,7 @@ export default function Index() {
       <NewProjectDialog
         open={showNewProjectDialog}
         onOpenChange={setShowNewProjectDialog}
-        onSave={(newProject) => {
-          setLocalProjects([...localProjects, {
-            id: (localProjects.length + 1).toString(),
-            status: "active",
-            consultants: [],
-            ...newProject
-          }]);
-        }}
+        onSave={handleNewProject}
       />
 
       <NewConsultantDialog

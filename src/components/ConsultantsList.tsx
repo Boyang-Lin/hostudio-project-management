@@ -16,7 +16,7 @@ interface ConsultantsListProps {
 }
 
 export function ConsultantsList({
-  consultantGroups,
+  consultantGroups = {},
   onConsultantGroupsChange,
   onNewConsultant,
   onNewGroup,
@@ -26,13 +26,15 @@ export function ConsultantsList({
   const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
 
   const handleConsultantUpdate = (updatedConsultant: Consultant, newGroupKey: string) => {
+    if (!editingConsultant) return;
+    
     const newGroups = { ...consultantGroups };
     
-    if (editingConsultant && editingConsultant.groupKey !== newGroupKey) {
+    if (editingConsultant.groupKey !== newGroupKey) {
       newGroups[editingConsultant.groupKey].consultants = newGroups[editingConsultant.groupKey].consultants
         .filter(c => c.email !== editingConsultant.consultant.email);
       newGroups[newGroupKey].consultants.push(updatedConsultant);
-    } else if (editingConsultant) {
+    } else {
       newGroups[editingConsultant.groupKey].consultants = newGroups[editingConsultant.groupKey].consultants
         .map(c => c.email === editingConsultant.consultant.email ? updatedConsultant : c);
     }
