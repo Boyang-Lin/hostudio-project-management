@@ -20,8 +20,11 @@ export interface Project {
   id: string;
   title: string;
   status: "active" | "completed" | "on-hold";
-  dueDate: string;
   consultants: ProjectConsultant[];
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  constructionCost: number;
 }
 
 export interface Payment {
@@ -38,7 +41,10 @@ export const projects: Project[] = [
     id: "1",
     title: "Website Redesign",
     status: "active",
-    dueDate: "2024-04-30",
+    clientName: "John Client",
+    clientEmail: "john.client@example.com",
+    clientPhone: "(555) 987-6543",
+    constructionCost: 1500000,
     consultants: [
       {
         name: "John Doe",
@@ -64,7 +70,10 @@ export const projects: Project[] = [
     id: "2",
     title: "Mobile App Development",
     status: "on-hold",
-    dueDate: "2024-05-15",
+    clientName: "Sarah Client",
+    clientEmail: "sarah.client@example.com",
+    clientPhone: "(555) 876-5432",
+    constructionCost: 2500000,
     consultants: [
       {
         name: "Mike Johnson",

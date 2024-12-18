@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
@@ -23,6 +23,10 @@ export function ProjectEditDialog({
   const form = useForm({
     defaultValues: {
       title: "",
+      clientName: "",
+      clientEmail: "",
+      clientPhone: "",
+      constructionCost: 0,
     },
   });
 
@@ -30,6 +34,10 @@ export function ProjectEditDialog({
     if (project) {
       form.reset({
         title: project.title,
+        clientName: project.clientName,
+        clientEmail: project.clientEmail,
+        clientPhone: project.clientPhone,
+        constructionCost: project.constructionCost,
       });
     }
   }, [project, form]);
@@ -38,17 +46,16 @@ export function ProjectEditDialog({
     onSave(data);
     onOpenChange(false);
     form.reset();
-    toast.success("Project details updated successfully");
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Project Details</DialogTitle>
+          <DialogTitle>{project ? "Edit Project" : "Create Project"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -57,6 +64,59 @@ export function ProjectEditDialog({
                   <FormLabel>Project Title</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter project title" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="clientName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Client Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter client name" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="clientEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Client Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="Enter client email" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="clientPhone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Client Phone</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter client phone number" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="constructionCost"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Construction Cost</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      placeholder="Enter construction cost" 
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
                   </FormControl>
                 </FormItem>
               )}

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Users, Timer, CheckCircle2, Pause } from "lucide-react";
+import { Users, Timer, CheckCircle2, Pause, Mail, Phone, DollarSign, User } from "lucide-react";
 import { ProjectConsultant } from "../data/mockData";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -15,6 +15,10 @@ interface ProjectCardProps {
   title: string;
   status: "active" | "completed" | "on-hold";
   consultants: ProjectConsultant[];
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  constructionCost: number;
   onStatusChange?: (status: "active" | "completed" | "on-hold") => void;
 }
 
@@ -47,7 +51,16 @@ const getStatusDetails = (status: string) => {
   }
 };
 
-export function ProjectCard({ title, status, consultants, onStatusChange }: ProjectCardProps) {
+export function ProjectCard({ 
+  title, 
+  status, 
+  consultants, 
+  clientName,
+  clientEmail,
+  clientPhone,
+  constructionCost,
+  onStatusChange 
+}: ProjectCardProps) {
   const currentStatus = getStatusDetails(status);
 
   const handleStatusSelect = (newStatus: "active" | "completed" | "on-hold", e: React.MouseEvent) => {
@@ -59,6 +72,15 @@ export function ProjectCard({ title, status, consultants, onStatusChange }: Proj
     }
   };
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   return (
     <Card className="hover:shadow-lg transition-shadow relative flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -66,6 +88,22 @@ export function ProjectCard({ title, status, consultants, onStatusChange }: Proj
       </CardHeader>
       <CardContent>
         <div className="flex flex-col space-y-2">
+          <div className="flex items-center text-sm text-gray-600">
+            <User className="mr-2 h-4 w-4" />
+            {clientName}
+          </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <Mail className="mr-2 h-4 w-4" />
+            {clientEmail}
+          </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <Phone className="mr-2 h-4 w-4" />
+            {clientPhone}
+          </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <DollarSign className="mr-2 h-4 w-4" />
+            {formatCurrency(constructionCost)}
+          </div>
           <div className="flex items-center text-sm text-gray-600">
             <Users className="mr-2 h-4 w-4" />
             {consultants.length} Consultant{consultants.length !== 1 ? "s" : ""}
