@@ -24,20 +24,15 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Error fetching projects:', error);
         toast.error('Failed to fetch projects');
         throw error;
       }
-
       return data as Project[];
     },
   });
@@ -57,8 +52,8 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
       setEditingProject(null);
     },
     onError: (error) => {
-      console.error('Update error:', error);
       toast.error("Failed to update project");
+      console.error('Update error:', error);
     },
   });
 
@@ -77,8 +72,8 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
       setDeletingProject(null);
     },
     onError: (error) => {
-      console.error('Delete error:', error);
       toast.error("Failed to delete project");
+      console.error('Delete error:', error);
     },
   });
 

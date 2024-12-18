@@ -7,7 +7,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { consultantGroups } from "@/data/mockData";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Dashboard = () => {
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
@@ -87,27 +86,16 @@ export const Dashboard = () => {
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      <Tabs defaultValue="projects" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="projects">Projects</TabsTrigger>
-          <TabsTrigger value="consultants">Consultants</TabsTrigger>
-        </TabsList>
+      <ProjectsList
+        onNewProject={() => setShowNewProjectDialog(true)}
+      />
 
-        <TabsContent value="projects">
-          <ProjectsList
-            onNewProject={() => setShowNewProjectDialog(true)}
-          />
-        </TabsContent>
-
-        <TabsContent value="consultants">
-          <ConsultantsList
-            consultantGroups={groups}
-            onConsultantGroupsChange={handleConsultantGroupsChange}
-            onNewConsultant={() => setShowNewConsultantDialog(true)}
-            onNewGroup={() => setShowNewGroupDialog(true)}
-          />
-        </TabsContent>
-      </Tabs>
+      <ConsultantsList
+        consultantGroups={groups}
+        onConsultantGroupsChange={handleConsultantGroupsChange}
+        onNewConsultant={() => setShowNewConsultantDialog(true)}
+        onNewGroup={() => setShowNewGroupDialog(true)}
+      />
 
       <NewProjectDialog
         open={showNewProjectDialog}
