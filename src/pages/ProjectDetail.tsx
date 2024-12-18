@@ -4,23 +4,51 @@ import { Button } from "@/components/ui/button";
 import { ProjectCard } from "@/components/ProjectCard";
 import { ConsultantCard } from "@/components/ConsultantCard";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Temporary mock data (in a real app, this would come from a database)
-const allConsultants = [
-  {
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "(555) 123-4567",
-    specialty: "UI/UX Design",
+const consultantGroups = {
+  engineers: {
+    title: "Engineers",
+    consultants: [
+      {
+        name: "John Doe",
+        email: "john@example.com",
+        phone: "(555) 123-4567",
+        specialty: "Structural Engineer",
+      },
+      {
+        name: "Sarah Wilson",
+        email: "sarah@example.com",
+        phone: "(555) 345-6789",
+        specialty: "Civil Engineer",
+      },
+    ],
   },
-  {
-    name: "Jane Smith",
-    email: "jane@example.com",
-    phone: "(555) 234-5678",
-    specialty: "Full Stack Development",
+  planners: {
+    title: "Planners",
+    consultants: [
+      {
+        name: "Jane Smith",
+        email: "jane@example.com",
+        phone: "(555) 234-5678",
+        specialty: "Urban Planner",
+      },
+    ],
   },
-];
+  landscapeArchitects: {
+    title: "Landscape Architects",
+    consultants: [
+      {
+        name: "Mike Brown",
+        email: "mike@example.com",
+        phone: "(555) 456-7890",
+        specialty: "Landscape Architect",
+      },
+    ],
+  },
+};
 
 const projects = [
   {
@@ -47,6 +75,7 @@ export default function ProjectDetail() {
   const [selectedConsultants, setSelectedConsultants] = useState<string[]>(
     project?.consultants || []
   );
+  const [activeTab, setActiveTab] = useState("details");
 
   if (!project) {
     return <div>Project not found</div>;
@@ -72,24 +101,57 @@ export default function ProjectDetail() {
         <ProjectCard {...project} />
       </div>
 
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4">Assign Consultants</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allConsultants.map((consultant) => (
-            <div key={consultant.email} className="relative">
-              <div className="absolute top-4 right-4 z-10">
-                <Checkbox
-                  checked={selectedConsultants.includes(consultant.name)}
-                  onCheckedChange={() => handleConsultantToggle(consultant.name)}
-                />
-              </div>
-              <ConsultantCard {...consultant} />
-            </div>
-          ))}
-        </div>
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="details">Project Details</TabsTrigger>
+          <TabsTrigger value="engagement">Engagement</TabsTrigger>
+        </TabsList>
 
-      <Button className="w-full md:w-auto">Save Assignments</Button>
+        <TabsContent value="details" className="space-y-4">
+          <div className="space-y-6">
+            {Object.entries(consultantGroups).map(([key, group]) => (
+              <div key={key} className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Users className="h-5 w-5" />
+                  <h2 className="text-xl font-semibold">{group.title}</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {group.consultants.map((consultant) => (
+                    <div key={consultant.email} className="relative">
+                      <div className="absolute top-4 right-4 z-10">
+                        <Checkbox
+                          checked={selectedConsultants.includes(consultant.name)}
+                          onCheckedChange={() => handleConsultantToggle(consultant.name)}
+                        />
+                      </div>
+                      <ConsultantCard {...consultant} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <Button className="w-full md:w-auto">Save Assignments</Button>
+        </TabsContent>
+
+        <TabsContent value="engagement">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Selected Consultants</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {selectedConsultants.map((consultantName) => {
+                const consultant = Object.values(consultantGroups)
+                  .flatMap((group) => group.consultants)
+                  .find((c) => c.name === consultantName);
+                
+                if (consultant) {
+                  return <ConsultantCard key={consultant.email} {...consultant} />;
+                }
+                return null;
+              })}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
