@@ -7,12 +7,18 @@ import { ConsultantTasks } from "@/components/ConsultantTasks";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { consultantGroups, ProjectConsultant, Consultant } from "../data/mockData";
+import { consultantGroups, BaseConsultant } from "../types/consultant";
 import { PaymentManagement } from "@/components/PaymentManagement";
 import { EngagementTabContent } from "@/components/EngagementTabContent";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { 
+  DatabaseProject, 
+  DatabaseProjectConsultant,
+  transformDatabaseConsultant,
+  transformToDatabase
+} from "../types/project";
 
 interface Task {
   id: string;
@@ -30,25 +36,38 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("details");
-  const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null);
+  const [selectedConsultant, setSelectedConsultant] = useState<BaseConsultant | null>(null);
   const [consultantTasks, setConsultantTasks] = useState<ConsultantTasks>({});
 
   // Fetch project data
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', id],
     queryFn: async () => {
-      const { data: project, error } = await supabase
+      const { data: projectData, error: projectError } = await supabase
         .from('projects')
-        .select('*, project_consultants(*)')
+        .select('*')
         .eq('id', id)
         .single();
 
-      if (error) {
+      if (projectError) {
         toast.error('Error loading project');
-        throw error;
+        throw projectError;
       }
 
-      return project;
+      const { data: consultantsData, error: consultantsError } = await supabase
+        .from('project_consultants')
+        .select('*')
+        .eq('project_id', id);
+
+      if (consultantsError) {
+        toast.error('Error loading consultants');
+        throw consultantsError;
+      }
+
+      return {
+        ...projectData,
+        project_consultants: consultantsData.map(transformDatabaseConsultant)
+      };
     }
   });
 
@@ -68,6 +87,25 @@ export default function ProjectDetail() {
     },
     onError: () => {
       toast.error('Failed to update project status');
+    }
+  });
+
+  // Add consultant mutation
+  const addConsultant = useMutation({
+    mutationFn: async (consultant: BaseConsultant) => {
+      if (!id) throw new Error('Project ID is required');
+      const { error } = await supabase
+        .from('project_consultants')
+        .insert([transformToDatabase(id, consultant)]);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project', id] });
+      toast.success('Consultant added successfully');
+    },
+    onError: () => {
+      toast.error('Failed to add consultant');
     }
   });
 
@@ -111,24 +149,6 @@ export default function ProjectDetail() {
     }
   });
 
-  // Add consultant mutation
-  const addConsultant = useMutation({
-    mutationFn: async (consultant: { projectId: string, email: string, name: string, specialty: string }) => {
-      const { error } = await supabase
-        .from('project_consultants')
-        .insert([consultant]);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['project', id] });
-      toast.success('Consultant added successfully');
-    },
-    onError: () => {
-      toast.error('Failed to add consultant');
-    }
-  });
-
   // Remove consultant mutation
   const removeConsultant = useMutation({
     mutationFn: async ({ projectId, email }: { projectId: string, email: string }) => {
@@ -161,7 +181,7 @@ export default function ProjectDetail() {
     updateProjectStatus.mutate({ id: project.id, status: newStatus });
   };
 
-  const handleConsultantToggle = (consultant: Consultant) => {
+  const handleConsultantToggle = (consultant: BaseConsultant) => {
     const isSelected = project.project_consultants.some(c => c.email === consultant.email);
     
     if (isSelected) {
