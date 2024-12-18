@@ -104,8 +104,13 @@ export default function ProjectDetail() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-4">Project Details</h1>
         <ProjectCard 
-          {...project} 
-          status={projectStatus} 
+          id={project.id}
+          title={project.title}
+          status={projectStatus}
+          client_name={project.clientName}
+          client_email={project.clientEmail}
+          client_phone={project.clientPhone}
+          construction_cost={project.constructionCost}
           onStatusChange={handleProjectStatusChange}
         />
       </div>
