@@ -4,7 +4,7 @@ import { ProjectEditDialog } from "./ProjectEditDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { Button } from "./ui/button";
 import { Plus, Trash2, Pencil } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,19 +21,37 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
   const [deletingProject, setDeletingProject] = useState<Project | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: projectsData = [], isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('projects')
-        .select('*');
+        .select('*, project_consultants(*, consultants(*))');
       
       if (error) {
         toast.error('Failed to fetch projects');
         throw error;
       }
       
-      return data || [];
+      // Transform the data to match the Project type
+      return data.map((project: any) => ({
+        id: project.id,
+        title: project.title,
+        status: project.status,
+        clientName: project.client_name,
+        clientEmail: project.client_email,
+        clientPhone: project.client_phone,
+        constructionCost: project.construction_cost,
+        consultants: project.project_consultants?.map((pc: any) => ({
+          id: pc.consultant?.id,
+          name: pc.consultant?.name,
+          email: pc.consultant?.email,
+          phone: pc.consultant?.phone,
+          specialty: pc.consultant?.specialty,
+          company: pc.consultant?.company,
+          address: pc.consultant?.address
+        })) || []
+      }));
     },
   });
 
@@ -42,7 +60,14 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
 
     const { error } = await supabase
       .from('projects')
-      .update(updatedProject)
+      .update({
+        title: updatedProject.title,
+        status: updatedProject.status,
+        client_name: updatedProject.clientName,
+        client_email: updatedProject.clientEmail,
+        client_phone: updatedProject.clientPhone,
+        construction_cost: updatedProject.constructionCost
+      })
       .eq('id', editingProject.id);
 
     if (error) {
@@ -101,7 +126,7 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((project) => (
+        {projectsData.map((project) => (
           <div key={project.id} className="relative group">
             <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
               <Button
@@ -130,7 +155,7 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
             </div>
             <Link to={`/project/${project.id}`}>
               <ProjectCard 
-                {...project} 
+                {...project}
                 onStatusChange={(newStatus) => handleStatusChange(project.id, newStatus)}
               />
             </Link>
