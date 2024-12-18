@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Calendar, Users, Timer, CheckCircle2, Pause } from "lucide-react";
 import { ProjectConsultant } from "../data/mockData";
 import { Button } from "@/components/ui/button";
@@ -74,7 +73,7 @@ export function ProjectCard({ title, status, dueDate, consultants, onStatusChang
               {currentStatus.text}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent align="end" className="w-[200px]">
             <DropdownMenuItem onClick={() => handleStatusSelect('active')}>
               <Timer className="mr-2 h-4 w-4" />
               In Progress

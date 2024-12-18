@@ -9,7 +9,7 @@ import { ArrowLeft, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { consultantGroups, projects, ProjectConsultant, Consultant } from "../data/mockData";
 import { PaymentManagement } from "@/components/PaymentManagement";
-import { Input } from "@/components/ui/input";
+import { EngagementTabContent } from "@/components/EngagementTabContent";
 import { toast } from "sonner";
 
 interface Task {
@@ -22,21 +22,6 @@ interface Task {
 interface ConsultantTasks {
   [consultantEmail: string]: Task[];
 }
-
-// Helper function to group consultants by specialty
-const groupConsultantsBySpecialty = (consultants: ProjectConsultant[]) => {
-  const groups: Record<string, ProjectConsultant[]> = {};
-  
-  consultants.forEach(consultant => {
-    const specialty = consultant.specialty;
-    if (!groups[specialty]) {
-      groups[specialty] = [];
-    }
-    groups[specialty].push(consultant);
-  });
-  
-  return groups;
-};
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -56,13 +41,13 @@ export default function ProjectDetail() {
     return initialQuotes;
   });
 
-  const handleProjectStatusChange = (newStatus: "active" | "completed" | "on-hold") => {
-    setProjectStatus(newStatus);
-  };
-
   if (!project) {
     return <div>Project not found</div>;
   }
+
+  const handleProjectStatusChange = (newStatus: "active" | "completed" | "on-hold") => {
+    setProjectStatus(newStatus);
+  };
 
   const handleConsultantToggle = (consultant: Consultant) => {
     setSelectedConsultants((prev) => {
@@ -99,19 +84,6 @@ export default function ProjectDetail() {
     }
   };
 
-  const handleConsultantClick = (consultant: Consultant) => {
-    setSelectedConsultant(consultant);
-  };
-
-  const handleTasksUpdate = (tasks: Task[]) => {
-    if (selectedConsultant) {
-      setConsultantTasks(prev => ({
-        ...prev,
-        [selectedConsultant.email]: tasks
-      }));
-    }
-  };
-
   const handleStatusChange = (email: string, status: 'in-progress' | 'completed' | 'on-hold') => {
     setSelectedConsultants(prev =>
       prev.map(consultant =>
@@ -121,8 +93,6 @@ export default function ProjectDetail() {
       )
     );
   };
-
-  const groupedSelectedConsultants = groupConsultantsBySpecialty(selectedConsultants);
 
   return (
     <div className="container mx-auto py-8">
@@ -179,33 +149,12 @@ export default function ProjectDetail() {
         </TabsContent>
 
         <TabsContent value="engagement">
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Selected Consultants</h2>
-            {Object.entries(groupedSelectedConsultants).map(([specialty, consultants]) => (
-              <div key={specialty} className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-5 w-5" />
-                  <h3 className="text-xl font-semibold">{specialty}</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {consultants.map((consultant) => (
-                    <div
-                      key={consultant.email}
-                      className="cursor-pointer"
-                      onClick={() => handleConsultantClick(consultant)}
-                    >
-                      <ConsultantCard 
-                        {...consultant} 
-                        quote={quotes[consultant.email]}
-                        showStatus={true}
-                        onStatusChange={(status) => handleStatusChange(consultant.email, status)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <EngagementTabContent
+            selectedConsultants={selectedConsultants}
+            quotes={quotes}
+            onConsultantClick={setSelectedConsultant}
+            onStatusChange={handleStatusChange}
+          />
         </TabsContent>
 
         <TabsContent value="payments">
@@ -219,7 +168,12 @@ export default function ProjectDetail() {
             <ConsultantTasks
               consultant={selectedConsultant}
               onClose={() => setSelectedConsultant(null)}
-              onTasksUpdate={handleTasksUpdate}
+              onTasksUpdate={(tasks) => {
+                setConsultantTasks(prev => ({
+                  ...prev,
+                  [selectedConsultant.email]: tasks
+                }));
+              }}
             />
           </div>
         </div>
