@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, DollarSign } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface ConsultantCardProps {
@@ -7,9 +7,10 @@ interface ConsultantCardProps {
   email: string;
   phone: string;
   specialty: string;
+  quote: number;
 }
 
-export function ConsultantCard({ name, email, phone, specialty }: ConsultantCardProps) {
+export function ConsultantCard({ name, email, phone, specialty, quote }: ConsultantCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="flex flex-row items-center space-x-4 pb-2">
@@ -32,6 +33,10 @@ export function ConsultantCard({ name, email, phone, specialty }: ConsultantCard
           <div className="flex items-center text-sm text-gray-600">
             <Phone className="mr-2 h-4 w-4" />
             {phone}
+          </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <DollarSign className="mr-2 h-4 w-4" />
+            Quote: ${quote.toLocaleString()}
           </div>
         </div>
       </CardContent>

@@ -8,7 +8,6 @@ interface ProjectCardProps {
   status: "active" | "completed" | "on-hold";
   dueDate: string;
   consultants: string[];
-  quote: string;
 }
 
 const statusColors = {
@@ -17,7 +16,7 @@ const statusColors = {
   "on-hold": "bg-warning",
 };
 
-export function ProjectCard({ title, status, dueDate, consultants, quote }: ProjectCardProps) {
+export function ProjectCard({ title, status, dueDate, consultants }: ProjectCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -35,9 +34,6 @@ export function ProjectCard({ title, status, dueDate, consultants, quote }: Proj
           <div className="flex items-center text-sm text-gray-600">
             <Users className="mr-2 h-4 w-4" />
             {consultants.length} Consultant{consultants.length !== 1 ? "s" : ""}
-          </div>
-          <div className="mt-2 text-sm font-medium">
-            Quote: {quote}
           </div>
         </div>
       </CardContent>

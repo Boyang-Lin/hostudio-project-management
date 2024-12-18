@@ -7,75 +7,14 @@ import { ConsultantTasks } from "@/components/ConsultantTasks";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Temporary mock data (in a real app, this would come from a database)
-const consultantGroups = {
-  engineers: {
-    title: "Engineers",
-    consultants: [
-      {
-        name: "John Doe",
-        email: "john@example.com",
-        phone: "(555) 123-4567",
-        specialty: "Structural Engineer",
-      },
-      {
-        name: "Sarah Wilson",
-        email: "sarah@example.com",
-        phone: "(555) 345-6789",
-        specialty: "Civil Engineer",
-      },
-    ],
-  },
-  planners: {
-    title: "Planners",
-    consultants: [
-      {
-        name: "Jane Smith",
-        email: "jane@example.com",
-        phone: "(555) 234-5678",
-        specialty: "Urban Planner",
-      },
-    ],
-  },
-  landscapeArchitects: {
-    title: "Landscape Architects",
-    consultants: [
-      {
-        name: "Mike Brown",
-        email: "mike@example.com",
-        phone: "(555) 456-7890",
-        specialty: "Landscape Architect",
-      },
-    ],
-  },
-};
-
-const projects = [
-  {
-    id: "1",
-    title: "Website Redesign",
-    status: "active" as const,
-    dueDate: "2024-04-30",
-    consultants: ["John Doe"],
-    quote: "$15,000",
-  },
-  {
-    id: "2",
-    title: "Mobile App Development",
-    status: "on-hold" as const,
-    dueDate: "2024-05-15",
-    consultants: ["Jane Smith"],
-    quote: "$25,000",
-  },
-];
+import { consultantGroups, projects, Consultant } from "../data/mockData";
+import { PaymentManagement } from "@/components/PaymentManagement";
 
 interface Task {
   id: string;
   description: string;
   completed: boolean;
   dueDate: Date | undefined;
-  relatedTasks: string[];
 }
 
 interface ConsultantTasks {
@@ -89,7 +28,7 @@ export default function ProjectDetail() {
     project?.consultants || []
   );
   const [activeTab, setActiveTab] = useState("details");
-  const [selectedConsultant, setSelectedConsultant] = useState<any>(null);
+  const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null);
   const [consultantTasks, setConsultantTasks] = useState<ConsultantTasks>({});
 
   if (!project) {
@@ -104,7 +43,7 @@ export default function ProjectDetail() {
     );
   };
 
-  const handleConsultantClick = (consultant: any) => {
+  const handleConsultantClick = (consultant: Consultant) => {
     setSelectedConsultant(consultant);
   };
 
@@ -117,8 +56,10 @@ export default function ProjectDetail() {
     }
   };
 
-  // Get all tasks from all consultants for linking
-  const allTasks = Object.values(consultantTasks).flat();
+  // Get selected consultants with their full information
+  const selectedConsultantsData = Object.values(consultantGroups)
+    .flatMap(group => group.consultants)
+    .filter(consultant => selectedConsultants.includes(consultant.name));
 
   return (
     <div className="container mx-auto py-8">
@@ -136,6 +77,7 @@ export default function ProjectDetail() {
         <TabsList>
           <TabsTrigger value="details">Project Details</TabsTrigger>
           <TabsTrigger value="engagement">Engagement</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
         </TabsList>
 
         <TabsContent value="details" className="space-y-4">
@@ -171,26 +113,27 @@ export default function ProjectDetail() {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Selected Consultants</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {selectedConsultants.map((consultantName) => {
-                const consultant = Object.values(consultantGroups)
-                  .flatMap((group) => group.consultants)
-                  .find((c) => c.name === consultantName);
-
-                if (consultant) {
-                  return (
-                    <div
-                      key={consultant.email}
-                      className="cursor-pointer"
-                      onClick={() => handleConsultantClick(consultant)}
-                    >
-                      <ConsultantCard {...consultant} />
-                    </div>
-                  );
-                }
-                return null;
-              })}
+              {Object.entries(consultantGroups).map(([key, group]) => (
+                <div key={key} className="space-y-4">
+                  {group.consultants
+                    .filter(consultant => selectedConsultants.includes(consultant.name))
+                    .map(consultant => (
+                      <div
+                        key={consultant.email}
+                        className="cursor-pointer"
+                        onClick={() => handleConsultantClick(consultant)}
+                      >
+                        <ConsultantCard {...consultant} />
+                      </div>
+                    ))}
+                </div>
+              ))}
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <PaymentManagement consultants={selectedConsultantsData} />
         </TabsContent>
       </Tabs>
 
