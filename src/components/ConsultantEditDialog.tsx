@@ -25,10 +25,10 @@ export function ConsultantEditDialog({
   onSave,
 }: ConsultantEditDialogProps) {
   const form = useForm({
-    defaultValues: {
+    defaultValues: consultant ? {
       ...consultant,
       group: currentGroup,
-    } || {
+    } : {
       name: "",
       email: "",
       phone: "",
