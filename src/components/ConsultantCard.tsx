@@ -4,6 +4,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ConsultantCardProps {
   name: string;
@@ -38,38 +44,34 @@ export function ConsultantCard({
         return { 
           icon: Timer, 
           bg: 'bg-warning',
-          text: 'In Progress',
-          next: 'completed'
+          text: 'In Progress'
         };
       case 'completed':
         return { 
           icon: CheckCircle2, 
           bg: 'bg-success',
-          text: 'Completed',
-          next: 'on-hold'
+          text: 'Completed'
         };
       case 'on-hold':
         return { 
           icon: Pause, 
           bg: 'bg-danger',
-          text: 'On Hold',
-          next: 'in-progress'
+          text: 'On Hold'
         };
       default:
         return { 
           icon: Timer, 
           bg: 'bg-warning',
-          text: 'In Progress',
-          next: 'completed'
+          text: 'In Progress'
         };
     }
   };
 
-  const handleStatusClick = () => {
-    if (!status || !onStatusChange) return;
-    const nextStatus = getStatusDetails(status).next as 'in-progress' | 'completed' | 'on-hold';
-    onStatusChange(nextStatus);
-    toast.success(`Status updated to ${getStatusDetails(nextStatus).text}`);
+  const handleStatusSelect = (newStatus: 'in-progress' | 'completed' | 'on-hold') => {
+    if (onStatusChange) {
+      onStatusChange(newStatus);
+      toast.success(`Status updated to ${getStatusDetails(newStatus).text}`);
+    }
   };
 
   const currentStatus = status ? getStatusDetails(status) : null;
@@ -88,15 +90,32 @@ export function ConsultantCard({
           <p className="text-sm text-gray-600">{specialty}</p>
         </div>
         {showStatus && currentStatus && (
-          <Button
-            variant="outline"
-            size="sm"
-            className={`${currentStatus.bg} text-white`}
-            onClick={handleStatusClick}
-          >
-            <currentStatus.icon className="mr-2 h-4 w-4" />
-            {currentStatus.text}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={`${currentStatus.bg} text-white`}
+              >
+                <currentStatus.icon className="mr-2 h-4 w-4" />
+                {currentStatus.text}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleStatusSelect('in-progress')}>
+                <Timer className="mr-2 h-4 w-4" />
+                In Progress
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusSelect('completed')}>
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Completed
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusSelect('on-hold')}>
+                <Pause className="mr-2 h-4 w-4" />
+                On Hold
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </CardHeader>
       <CardContent>
