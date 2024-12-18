@@ -1,7 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users } from "lucide-react";
+import { Calendar, Users, Timer, CheckCircle2, Pause } from "lucide-react";
 import { ProjectConsultant } from "../data/mockData";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ProjectCardProps {
   id?: string;
@@ -9,22 +17,78 @@ interface ProjectCardProps {
   status: "active" | "completed" | "on-hold";
   dueDate: string;
   consultants: ProjectConsultant[];
+  onStatusChange?: (status: "active" | "completed" | "on-hold") => void;
 }
 
-const statusColors = {
-  active: "bg-success",
-  completed: "bg-secondary",
-  "on-hold": "bg-warning",
+const getStatusDetails = (status: string) => {
+  switch (status) {
+    case 'active':
+      return { 
+        icon: Timer, 
+        bg: 'bg-warning',
+        text: 'In Progress'
+      };
+    case 'completed':
+      return { 
+        icon: CheckCircle2, 
+        bg: 'bg-success',
+        text: 'Completed'
+      };
+    case 'on-hold':
+      return { 
+        icon: Pause, 
+        bg: 'bg-danger',
+        text: 'On Hold'
+      };
+    default:
+      return { 
+        icon: Timer, 
+        bg: 'bg-warning',
+        text: 'In Progress'
+      };
+  }
 };
 
-export function ProjectCard({ title, status, dueDate, consultants }: ProjectCardProps) {
+export function ProjectCard({ title, status, dueDate, consultants, onStatusChange }: ProjectCardProps) {
+  const currentStatus = getStatusDetails(status);
+
+  const handleStatusSelect = (newStatus: "active" | "completed" | "on-hold") => {
+    if (onStatusChange) {
+      onStatusChange(newStatus);
+      toast.success(`Project status updated to ${getStatusDetails(newStatus).text}`);
+    }
+  };
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-bold">{title}</CardTitle>
-        <Badge className={`${statusColors[status]}`}>
-          {status.charAt(0).toUpperCase() + status.slice(1)}
-        </Badge>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={`${currentStatus.bg} text-white`}
+            >
+              <currentStatus.icon className="mr-2 h-4 w-4" />
+              {currentStatus.text}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleStatusSelect('active')}>
+              <Timer className="mr-2 h-4 w-4" />
+              In Progress
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusSelect('completed')}>
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              Completed
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusSelect('on-hold')}>
+              <Pause className="mr-2 h-4 w-4" />
+              On Hold
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col space-y-2">

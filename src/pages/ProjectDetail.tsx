@@ -29,6 +29,7 @@ export default function ProjectDetail() {
   const [selectedConsultants, setSelectedConsultants] = useState<ProjectConsultant[]>(
     project?.consultants || []
   );
+  const [projectStatus, setProjectStatus] = useState(project?.status || 'active');
   const [activeTab, setActiveTab] = useState("details");
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null);
   const [consultantTasks, setConsultantTasks] = useState<ConsultantTasks>({});
@@ -39,6 +40,10 @@ export default function ProjectDetail() {
     });
     return initialQuotes;
   });
+
+  const handleProjectStatusChange = (newStatus: "active" | "completed" | "on-hold") => {
+    setProjectStatus(newStatus);
+  };
 
   if (!project) {
     return <div>Project not found</div>;
@@ -111,7 +116,11 @@ export default function ProjectDetail() {
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-4">Project Details</h1>
-        <ProjectCard {...project} />
+        <ProjectCard 
+          {...project} 
+          status={projectStatus} 
+          onStatusChange={handleProjectStatusChange}
+        />
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
