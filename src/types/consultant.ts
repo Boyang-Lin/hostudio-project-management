@@ -4,11 +4,11 @@ export interface BaseConsultant {
   phone: string;
   specialty: string;
   company: string;
-  address?: string;
+  address: string;
 }
 
 export interface ProjectConsultant extends BaseConsultant {
-  quote: number;
+  quote?: number;
   status?: 'in-progress' | 'completed' | 'on-hold';
 }
 
