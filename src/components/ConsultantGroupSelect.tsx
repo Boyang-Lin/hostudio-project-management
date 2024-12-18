@@ -7,36 +7,36 @@ import {
 } from "@/components/ui/select";
 import { ConsultantGroup } from "../data/mockData";
 import { toast } from "sonner";
+import { BaseConsultant } from "@/types/consultant";
+import { Dispatch, SetStateAction } from "react";
 
 interface ConsultantGroupSelectProps {
-  consultantEmail: string;
-  currentGroup: string;
-  groups: Record<string, ConsultantGroup>;
-  onGroupChange: (email: string, newGroup: string, oldGroup: string) => void;
+  selectedConsultant: BaseConsultant | null;
+  setSelectedConsultant: Dispatch<SetStateAction<BaseConsultant | null>>;
+  onAddConsultant: () => void;
 }
 
 export function ConsultantGroupSelect({
-  consultantEmail,
-  currentGroup,
-  groups,
-  onGroupChange,
+  selectedConsultant,
+  setSelectedConsultant,
+  onAddConsultant,
 }: ConsultantGroupSelectProps) {
-  const handleGroupChange = (newGroup: string) => {
-    onGroupChange(consultantEmail, newGroup, currentGroup);
-    toast.success("Consultant group updated successfully");
+  const handleGroupChange = () => {
+    onAddConsultant();
+    toast.success("Consultant added successfully");
   };
 
   return (
-    <Select onValueChange={handleGroupChange} defaultValue={currentGroup}>
+    <Select onValueChange={handleGroupChange} defaultValue={selectedConsultant?.email}>
       <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select group" />
+        <SelectValue placeholder="Select consultant" />
       </SelectTrigger>
       <SelectContent>
-        {Object.keys(groups).map((groupKey) => (
-          <SelectItem key={groupKey} value={groupKey}>
-            {groups[groupKey].title}
+        {selectedConsultant && (
+          <SelectItem value={selectedConsultant.email}>
+            {selectedConsultant.name}
           </SelectItem>
-        ))}
+        )}
       </SelectContent>
     </Select>
   );
