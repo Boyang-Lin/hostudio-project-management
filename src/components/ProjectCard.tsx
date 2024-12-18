@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Calendar, Users, Timer, CheckCircle2, Pause } from "lucide-react";
+import { Users, Timer, CheckCircle2, Pause } from "lucide-react";
 import { ProjectConsultant } from "../data/mockData";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -14,7 +14,6 @@ interface ProjectCardProps {
   id?: string;
   title: string;
   status: "active" | "completed" | "on-hold";
-  dueDate: string;
   consultants: ProjectConsultant[];
   onStatusChange?: (status: "active" | "completed" | "on-hold") => void;
 }
@@ -48,12 +47,12 @@ const getStatusDetails = (status: string) => {
   }
 };
 
-export function ProjectCard({ title, status, dueDate, consultants, onStatusChange }: ProjectCardProps) {
+export function ProjectCard({ title, status, consultants, onStatusChange }: ProjectCardProps) {
   const currentStatus = getStatusDetails(status);
 
   const handleStatusSelect = (newStatus: "active" | "completed" | "on-hold", e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation
-    e.stopPropagation(); // Stop event from bubbling up
+    e.preventDefault();
+    e.stopPropagation();
     if (onStatusChange) {
       onStatusChange(newStatus);
       toast.success(`Project status updated to ${getStatusDetails(newStatus).text}`);
@@ -67,10 +66,6 @@ export function ProjectCard({ title, status, dueDate, consultants, onStatusChang
       </CardHeader>
       <CardContent>
         <div className="flex flex-col space-y-2">
-          <div className="flex items-center text-sm text-gray-600">
-            <Calendar className="mr-2 h-4 w-4" />
-            Due: {dueDate}
-          </div>
           <div className="flex items-center text-sm text-gray-600">
             <Users className="mr-2 h-4 w-4" />
             {consultants.length} Consultant{consultants.length !== 1 ? "s" : ""}

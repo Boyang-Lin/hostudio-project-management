@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { Project } from "../data/mockData";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 interface ProjectEditDialogProps {
   project: Project | null;
@@ -20,11 +21,18 @@ export function ProjectEditDialog({
   onSave,
 }: ProjectEditDialogProps) {
   const form = useForm({
-    defaultValues: project || {
+    defaultValues: {
       title: "",
-      dueDate: "",
     },
   });
+
+  useEffect(() => {
+    if (project) {
+      form.reset({
+        title: project.title,
+      });
+    }
+  }, [project, form]);
 
   const handleSubmit = (data: Partial<Project>) => {
     onSave(data);
@@ -49,18 +57,6 @@ export function ProjectEditDialog({
                   <FormLabel>Project Title</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter project title" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="dueDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Due Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
                   </FormControl>
                 </FormItem>
               )}

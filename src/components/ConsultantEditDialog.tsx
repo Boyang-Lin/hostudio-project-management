@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useForm } from "react-hook-form";
 import { Consultant } from "../data/mockData";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 interface ConsultantEditDialogProps {
   consultant: Consultant | null;
@@ -25,10 +26,7 @@ export function ConsultantEditDialog({
   onSave,
 }: ConsultantEditDialogProps) {
   const form = useForm({
-    defaultValues: consultant ? {
-      ...consultant,
-      group: currentGroup,
-    } : {
+    defaultValues: {
       name: "",
       email: "",
       phone: "",
@@ -37,6 +35,15 @@ export function ConsultantEditDialog({
       group: currentGroup,
     },
   });
+
+  useEffect(() => {
+    if (consultant) {
+      form.reset({
+        ...consultant,
+        group: currentGroup,
+      });
+    }
+  }, [consultant, currentGroup, form]);
 
   const handleSubmit = (data: any) => {
     const { group, ...consultantData } = data;
