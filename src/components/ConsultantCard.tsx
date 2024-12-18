@@ -7,7 +7,7 @@ interface ConsultantCardProps {
   email: string;
   phone: string;
   specialty: string;
-  quote: number;
+  quote?: number;
 }
 
 export function ConsultantCard({ name, email, phone, specialty, quote }: ConsultantCardProps) {
@@ -34,10 +34,12 @@ export function ConsultantCard({ name, email, phone, specialty, quote }: Consult
             <Phone className="mr-2 h-4 w-4" />
             {phone}
           </div>
-          <div className="flex items-center text-sm text-gray-600">
-            <DollarSign className="mr-2 h-4 w-4" />
-            Quote: ${quote.toLocaleString()}
-          </div>
+          {quote !== undefined && (
+            <div className="flex items-center text-sm text-gray-600">
+              <DollarSign className="mr-2 h-4 w-4" />
+              Quote: ${quote.toLocaleString()}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -1,13 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Users } from "lucide-react";
+import { ProjectConsultant } from "../data/mockData";
 
 interface ProjectCardProps {
   id?: string;
   title: string;
   status: "active" | "completed" | "on-hold";
   dueDate: string;
-  consultants: string[];
+  consultants: ProjectConsultant[];
 }
 
 const statusColors = {

@@ -3,7 +3,6 @@ export interface Consultant {
   email: string;
   phone: string;
   specialty: string;
-  quote: number;
 }
 
 export interface ConsultantGroup {
@@ -11,12 +10,16 @@ export interface ConsultantGroup {
   consultants: Consultant[];
 }
 
+export interface ProjectConsultant extends Consultant {
+  quote: number;
+}
+
 export interface Project {
   id: string;
   title: string;
   status: "active" | "completed" | "on-hold";
   dueDate: string;
-  consultants: string[];
+  consultants: ProjectConsultant[];
 }
 
 export interface Payment {
@@ -34,14 +37,37 @@ export const projects: Project[] = [
     title: "Website Redesign",
     status: "active",
     dueDate: "2024-04-30",
-    consultants: ["John Doe", "Jane Smith"],
+    consultants: [
+      {
+        name: "John Doe",
+        email: "john@example.com",
+        phone: "(555) 123-4567",
+        specialty: "UI/UX Design",
+        quote: 15000
+      },
+      {
+        name: "Jane Smith",
+        email: "jane@example.com",
+        phone: "(555) 234-5678",
+        specialty: "Urban Planner",
+        quote: 18000
+      }
+    ],
   },
   {
     id: "2",
     title: "Mobile App Development",
     status: "on-hold",
     dueDate: "2024-05-15",
-    consultants: ["Mike Johnson"],
+    consultants: [
+      {
+        name: "Mike Johnson",
+        email: "mike@example.com",
+        phone: "(555) 456-7890",
+        specialty: "Landscape Architect",
+        quote: 20000
+      }
+    ],
   },
 ];
 
@@ -53,15 +79,13 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         name: "John Doe",
         email: "john@example.com",
         phone: "(555) 123-4567",
-        specialty: "UI/UX Design",
-        quote: 15000,
+        specialty: "UI/UX Design"
       },
       {
         name: "Sarah Wilson",
         email: "sarah@example.com",
         phone: "(555) 345-6789",
-        specialty: "Civil Engineer",
-        quote: 12000,
+        specialty: "Civil Engineer"
       },
     ],
   },
@@ -72,8 +96,7 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         name: "Jane Smith",
         email: "jane@example.com",
         phone: "(555) 234-5678",
-        specialty: "Urban Planner",
-        quote: 18000,
+        specialty: "Urban Planner"
       },
     ],
   },
@@ -84,8 +107,7 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         name: "Mike Brown",
         email: "mike@example.com",
         phone: "(555) 456-7890",
-        specialty: "Landscape Architect",
-        quote: 20000,
+        specialty: "Landscape Architect"
       },
     ],
   },
