@@ -25,6 +25,7 @@ export interface Payment {
   status: 'pending' | 'paid';
   invoiceDate: string;
   paidDate?: string;
+  invoiceName: string;
 }
 
 export const projects: Project[] = [

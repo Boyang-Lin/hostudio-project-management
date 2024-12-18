@@ -13,6 +13,7 @@ interface PaymentManagementProps {
 export function PaymentManagement({ consultants }: PaymentManagementProps) {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [newInvoiceAmount, setNewInvoiceAmount] = useState<{ [key: string]: number }>({});
+  const [newInvoiceName, setNewInvoiceName] = useState<{ [key: string]: string }>({});
 
   const totalQuote = consultants.reduce((sum, consultant) => sum + consultant.quote, 0);
   const totalInvoiced = payments.reduce((sum, payment) => sum + payment.amount, 0);
@@ -22,8 +23,15 @@ export function PaymentManagement({ consultants }: PaymentManagementProps) {
 
   const handleCreateInvoice = (consultant: Consultant) => {
     const amount = newInvoiceAmount[consultant.email];
+    const invoiceName = newInvoiceName[consultant.email];
+
     if (!amount || amount <= 0) {
       toast.error("Please enter a valid amount");
+      return;
+    }
+
+    if (!invoiceName?.trim()) {
+      toast.error("Please enter an invoice name");
       return;
     }
 
@@ -41,10 +49,12 @@ export function PaymentManagement({ consultants }: PaymentManagementProps) {
       amount: amount,
       status: 'pending',
       invoiceDate: new Date().toISOString().split('T')[0],
+      invoiceName: invoiceName,
     };
     setPayments(prev => [...prev, newPayment]);
     setNewInvoiceAmount(prev => ({ ...prev, [consultant.email]: 0 }));
-    toast.success(`Invoice created for ${consultant.name}`);
+    setNewInvoiceName(prev => ({ ...prev, [consultant.email]: '' }));
+    toast.success(`Invoice "${invoiceName}" created for ${consultant.name}`);
   };
 
   const handleMarkAsPaid = (payment: Payment) => {
@@ -106,6 +116,16 @@ export function PaymentManagement({ consultants }: PaymentManagementProps) {
                   </div>
                   <div className="flex items-center gap-2">
                     <Input
+                      type="text"
+                      placeholder="Invoice Name"
+                      className="w-48"
+                      value={newInvoiceName[consultant.email] || ''}
+                      onChange={(e) => setNewInvoiceName(prev => ({
+                        ...prev,
+                        [consultant.email]: e.target.value
+                      }))}
+                    />
+                    <Input
                       type="number"
                       placeholder="Amount"
                       className="w-32"
@@ -126,6 +146,7 @@ export function PaymentManagement({ consultants }: PaymentManagementProps) {
                 {consultantPayments.map((payment, index) => (
                   <div key={index} className="mt-4 flex items-center justify-between">
                     <div>
+                      <p className="text-sm font-medium">{payment.invoiceName}</p>
                       <p className="text-sm">Invoice Date: {payment.invoiceDate}</p>
                       <p className="text-sm">Amount: ${payment.amount.toLocaleString()}</p>
                     </div>
