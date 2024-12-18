@@ -25,9 +25,10 @@ interface ConsultantTasksProps {
   };
   onClose: () => void;
   allTasks?: Task[];
+  onTasksUpdate?: (tasks: Task[]) => void;
 }
 
-export function ConsultantTasks({ consultant, onClose, allTasks = [] }: ConsultantTasksProps) {
+export function ConsultantTasks({ consultant, onClose, allTasks = [], onTasksUpdate }: ConsultantTasksProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -35,7 +36,7 @@ export function ConsultantTasks({ consultant, onClose, allTasks = [] }: Consulta
 
   const addTask = () => {
     if (newTask.trim()) {
-      setTasks([
+      const updatedTasks = [
         ...tasks,
         {
           id: crypto.randomUUID(),
@@ -44,7 +45,9 @@ export function ConsultantTasks({ consultant, onClose, allTasks = [] }: Consulta
           dueDate: selectedDate,
           relatedTasks: selectedRelatedTasks,
         },
-      ]);
+      ];
+      setTasks(updatedTasks);
+      onTasksUpdate?.(updatedTasks);
       setNewTask("");
       setSelectedDate(undefined);
       setSelectedRelatedTasks([]);
@@ -52,13 +55,17 @@ export function ConsultantTasks({ consultant, onClose, allTasks = [] }: Consulta
   };
 
   const toggleTask = (taskId: string) => {
-    setTasks(tasks.map(task => 
+    const updatedTasks = tasks.map(task => 
       task.id === taskId ? { ...task, completed: !task.completed } : task
-    ));
+    );
+    setTasks(updatedTasks);
+    onTasksUpdate?.(updatedTasks);
   };
 
   const deleteTask = (taskId: string) => {
-    setTasks(tasks.filter(task => task.id !== taskId));
+    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    setTasks(updatedTasks);
+    onTasksUpdate?.(updatedTasks);
   };
 
   const toggleRelatedTask = (taskId: string) => {
@@ -69,13 +76,18 @@ export function ConsultantTasks({ consultant, onClose, allTasks = [] }: Consulta
     );
   };
 
+  const handleClose = () => {
+    onTasksUpdate?.(tasks);
+    onClose();
+  };
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-2xl font-bold">
           Tasks for {consultant.name}
         </CardTitle>
-        <Button variant="ghost" size="icon" onClick={onClose}>
+        <Button variant="ghost" size="icon" onClick={handleClose}>
           <X className="h-4 w-4" />
         </Button>
       </CardHeader>
@@ -119,11 +131,11 @@ export function ConsultantTasks({ consultant, onClose, allTasks = [] }: Consulta
           </div>
 
           {allTasks && allTasks.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-sm font-medium mb-2">Related Tasks:</h3>
-              <div className="space-y-2">
+            <div className="mt-4 border rounded-lg p-4 bg-secondary/50">
+              <h3 className="text-sm font-medium mb-2">Link Related Tasks:</h3>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
                 {allTasks.map((task) => (
-                  <div key={task.id} className="flex items-center gap-2">
+                  <div key={task.id} className="flex items-center gap-2 p-2 hover:bg-secondary rounded">
                     <input
                       type="checkbox"
                       checked={selectedRelatedTasks.includes(task.id)}

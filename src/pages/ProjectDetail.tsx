@@ -70,6 +70,18 @@ const projects = [
   },
 ];
 
+interface Task {
+  id: string;
+  description: string;
+  completed: boolean;
+  dueDate: Date | undefined;
+  relatedTasks: string[];
+}
+
+interface ConsultantTasks {
+  [consultantEmail: string]: Task[];
+}
+
 export default function ProjectDetail() {
   const { id } = useParams();
   const project = projects.find((p) => p.id === id);
@@ -78,6 +90,7 @@ export default function ProjectDetail() {
   );
   const [activeTab, setActiveTab] = useState("details");
   const [selectedConsultant, setSelectedConsultant] = useState<any>(null);
+  const [consultantTasks, setConsultantTasks] = useState<ConsultantTasks>({});
 
   if (!project) {
     return <div>Project not found</div>;
@@ -94,6 +107,18 @@ export default function ProjectDetail() {
   const handleConsultantClick = (consultant: any) => {
     setSelectedConsultant(consultant);
   };
+
+  const handleTasksUpdate = (tasks: Task[]) => {
+    if (selectedConsultant) {
+      setConsultantTasks(prev => ({
+        ...prev,
+        [selectedConsultant.email]: tasks
+      }));
+    }
+  };
+
+  // Get all tasks from all consultants for linking
+  const allTasks = Object.values(consultantTasks).flat();
 
   return (
     <div className="container mx-auto py-8">
@@ -175,6 +200,8 @@ export default function ProjectDetail() {
             <ConsultantTasks
               consultant={selectedConsultant}
               onClose={() => setSelectedConsultant(null)}
+              allTasks={allTasks}
+              onTasksUpdate={handleTasksUpdate}
             />
           </div>
         </div>
