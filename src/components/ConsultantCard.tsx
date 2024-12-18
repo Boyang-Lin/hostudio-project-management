@@ -8,6 +8,7 @@ interface ConsultantCardProps {
   email: string;
   phone: string;
   specialty: string;
+  company: string;
   quote?: number;
   onQuoteChange?: (value: number) => void;
   showQuoteInput?: boolean;
@@ -17,7 +18,8 @@ export function ConsultantCard({
   name, 
   email, 
   phone, 
-  specialty, 
+  specialty,
+  company,
   quote, 
   onQuoteChange,
   showQuoteInput 
@@ -32,6 +34,7 @@ export function ConsultantCard({
         </Avatar>
         <div>
           <CardTitle className="text-xl font-bold">{name}</CardTitle>
+          <p className="text-sm text-gray-600">{company}</p>
           <p className="text-sm text-gray-600">{specialty}</p>
         </div>
       </CardHeader>

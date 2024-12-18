@@ -3,6 +3,7 @@ export interface Consultant {
   email: string;
   phone: string;
   specialty: string;
+  company: string;
 }
 
 export interface ProjectConsultant extends Consultant {
@@ -43,6 +44,7 @@ export const projects: Project[] = [
         email: "john@example.com",
         phone: "(555) 123-4567",
         specialty: "UI/UX Design",
+        company: "Tech Solutions Inc",
         quote: 15000
       },
       {
@@ -50,6 +52,7 @@ export const projects: Project[] = [
         email: "jane@example.com",
         phone: "(555) 234-5678",
         specialty: "Urban Planner",
+        company: "Urban Planning Co",
         quote: 18000
       }
     ],
@@ -65,6 +68,7 @@ export const projects: Project[] = [
         email: "mike@example.com",
         phone: "(555) 456-7890",
         specialty: "Landscape Architect",
+        company: "Green Spaces Design",
         quote: 20000
       }
     ],
@@ -79,13 +83,15 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         name: "John Doe",
         email: "john@example.com",
         phone: "(555) 123-4567",
-        specialty: "UI/UX Design"
+        specialty: "UI/UX Design",
+        company: "Tech Solutions Inc"
       },
       {
         name: "Sarah Wilson",
         email: "sarah@example.com",
         phone: "(555) 345-6789",
-        specialty: "Civil Engineer"
+        specialty: "Civil Engineer",
+        company: "Build Better Ltd"
       },
     ],
   },
@@ -96,7 +102,8 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         name: "Jane Smith",
         email: "jane@example.com",
         phone: "(555) 234-5678",
-        specialty: "Urban Planner"
+        specialty: "Urban Planner",
+        company: "Urban Planning Co"
       },
     ],
   },
@@ -107,7 +114,8 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         name: "Mike Brown",
         email: "mike@example.com",
         phone: "(555) 456-7890",
-        specialty: "Landscape Architect"
+        specialty: "Landscape Architect",
+        company: "Green Spaces Design"
       },
     ],
   },

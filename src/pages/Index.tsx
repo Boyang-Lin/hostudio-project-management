@@ -6,10 +6,14 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { projects, consultantGroups } from "../data/mockData";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function Index() {
   const { toast } = useToast();
   const [showNewProjectForm, setShowNewProjectForm] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
 
   const handleNewProject = () => {
     toast({
@@ -23,6 +27,19 @@ export default function Index() {
       title: "Coming Soon",
       description: "Consultant addition functionality will be available soon.",
     });
+  };
+
+  const handleAddGroup = () => {
+    if (newGroupName.trim()) {
+      // In a real application, this would be handled by an API call
+      // For now, we'll just show a toast
+      toast({
+        title: "New Group Created",
+        description: `Group "${newGroupName}" has been created.`,
+      });
+      setNewGroupName("");
+      setShowNewGroupDialog(false);
+    }
   };
 
   return (
@@ -46,9 +63,33 @@ export default function Index() {
       <div>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-primary">Consultants</h2>
-          <Button onClick={handleAddConsultant}>
-            <Plus className="mr-2 h-4 w-4" /> Add Consultant
-          </Button>
+          <div className="space-x-2">
+            <Dialog open={showNewGroupDialog} onOpenChange={setShowNewGroupDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Plus className="mr-2 h-4 w-4" /> New Group
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Group</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <Input
+                    placeholder="Enter group name"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                  />
+                  <Button onClick={handleAddGroup} className="w-full">
+                    Create Group
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button onClick={handleAddConsultant}>
+              <Plus className="mr-2 h-4 w-4" /> Add Consultant
+            </Button>
+          </div>
         </div>
         {Object.entries(consultantGroups).map(([key, group]) => (
           <div key={key} className="mb-8">
