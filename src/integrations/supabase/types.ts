@@ -30,6 +30,83 @@ export type Database = {
         }
         Relationships: []
       }
+      project_consultants: {
+        Row: {
+          created_at: string
+          email: string
+          name: string
+          project_id: string
+          quote: number | null
+          specialty: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          name: string
+          project_id: string
+          quote?: number | null
+          specialty: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          name?: string
+          project_id?: string
+          quote?: number | null
+          specialty?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_consultants_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          client_email: string
+          client_name: string
+          client_phone: string
+          construction_cost: number
+          created_at: string
+          id: string
+          owner_id: string
+          status: Database["public"]["Enums"]["project_status"] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_email: string
+          client_name: string
+          client_phone: string
+          construction_cost: number
+          created_at?: string
+          id?: string
+          owner_id: string
+          status?: Database["public"]["Enums"]["project_status"] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_email?: string
+          client_name?: string
+          client_phone?: string
+          construction_cost?: number
+          created_at?: string
+          id?: string
+          owner_id?: string
+          status?: Database["public"]["Enums"]["project_status"] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -38,6 +115,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      project_status: "active" | "completed" | "on-hold"
       user_role: "admin" | "pending" | "user"
     }
     CompositeTypes: {
