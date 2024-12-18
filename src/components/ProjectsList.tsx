@@ -3,7 +3,7 @@ import { ProjectCard } from "./ProjectCard";
 import { ProjectEditDialog } from "./ProjectEditDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { Button } from "./ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -47,19 +47,20 @@ export function ProjectsList({ projects, onProjectsChange, onNewProject }: Proje
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
-          <div key={project.id} className="relative group">
-            <div className="absolute top-2 right-2 z-10 space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div key={project.id} className="relative">
+            <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="sm"
+                className="bg-white/90 hover:bg-white"
                 onClick={() => setEditingProject(project)}
               >
-                Edit
+                <Pencil className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-destructive"
+                className="bg-white/90 hover:bg-white text-destructive hover:text-destructive"
                 onClick={() => setDeletingProject(project)}
               >
                 <Trash2 className="h-4 w-4" />
