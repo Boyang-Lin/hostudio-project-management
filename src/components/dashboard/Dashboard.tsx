@@ -8,8 +8,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Dashboard = () => {
-  const [projects, setProjects] = useState([]);
-  const [consultantGroups, setConsultantGroups] = useState({});
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
@@ -28,7 +26,6 @@ export const Dashboard = () => {
 
       if (error) throw error;
       
-      setProjects([...projects, data]);
       setShowNewProjectDialog(false);
       toast.success('Project created successfully');
     } catch (error) {
@@ -51,12 +48,6 @@ export const Dashboard = () => {
         .single();
 
       if (consultantError) throw consultantError;
-
-      const updatedGroups = { ...consultantGroups };
-      if (updatedGroups[group]) {
-        updatedGroups[group].consultants.push(consultant);
-        setConsultantGroups(updatedGroups);
-      }
       
       setShowNewConsultantDialog(false);
       toast.success('Consultant added successfully');
@@ -78,14 +69,6 @@ export const Dashboard = () => {
         .single();
 
       if (error) throw error;
-
-      setConsultantGroups({
-        ...consultantGroups,
-        [group.id]: {
-          title: group.title,
-          consultants: [],
-        },
-      });
       
       setShowNewGroupDialog(false);
       toast.success('Group created successfully');
@@ -98,14 +81,10 @@ export const Dashboard = () => {
   return (
     <div className="container mx-auto py-8 space-y-8">
       <ProjectsList
-        projects={projects}
-        onProjectsChange={setProjects}
         onNewProject={() => setShowNewProjectDialog(true)}
       />
 
       <ConsultantsList
-        consultantGroups={consultantGroups}
-        onConsultantGroupsChange={setConsultantGroups}
         onNewConsultant={() => setShowNewConsultantDialog(true)}
         onNewGroup={() => setShowNewGroupDialog(true)}
       />
@@ -119,7 +98,6 @@ export const Dashboard = () => {
       <NewConsultantDialog
         open={showNewConsultantDialog}
         onOpenChange={setShowNewConsultantDialog}
-        groups={consultantGroups}
         onSave={handleNewConsultant}
       />
 

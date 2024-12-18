@@ -151,7 +151,7 @@ export function ProjectsList({ onNewProject }: { onNewProject: () => void }) {
               </div>
               <Link to={`/project/${project.id}`}>
                 <ProjectCard 
-                  {...project} 
+                  {...project}
                   onStatusChange={(newStatus) => handleStatusChange(project.id, newStatus)}
                 />
               </Link>
