@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { projects as initialProjects, consultantGroups as initialConsultantGroups } from "../data/mockData";
 import { ProjectsList } from "@/components/ProjectsList";
 import { ConsultantsList } from "@/components/ConsultantsList";
@@ -7,11 +7,28 @@ import { NewConsultantDialog } from "@/components/NewConsultantDialog";
 import { NewGroupDialog } from "@/components/NewGroupDialog";
 
 export default function Index() {
-  const [localProjects, setLocalProjects] = useState(initialProjects);
-  const [localConsultantGroups, setLocalConsultantGroups] = useState(initialConsultantGroups);
+  const [localProjects, setLocalProjects] = useState(() => {
+    const savedProjects = localStorage.getItem('projects');
+    return savedProjects ? JSON.parse(savedProjects) : initialProjects;
+  });
+
+  const [localConsultantGroups, setLocalConsultantGroups] = useState(() => {
+    const savedGroups = localStorage.getItem('consultantGroups');
+    return savedGroups ? JSON.parse(savedGroups) : initialConsultantGroups;
+  });
+
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    localStorage.setItem('projects', JSON.stringify(localProjects));
+  }, [localProjects]);
+
+  useEffect(() => {
+    localStorage.setItem('consultantGroups', JSON.stringify(localConsultantGroups));
+  }, [localConsultantGroups]);
 
   return (
     <div className="container mx-auto py-8 space-y-8">
