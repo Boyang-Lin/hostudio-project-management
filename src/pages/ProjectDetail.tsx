@@ -47,12 +47,14 @@ export default function ProjectDetail() {
   const handleConsultantToggle = (consultant: Consultant) => {
     setSelectedConsultants((prev) => {
       if (prev.some(c => c.email === consultant.email)) {
+        toast.success(`Removed ${consultant.name} from the project`);
         return prev.filter((c) => c.email !== consultant.email);
       } else {
         const newConsultant: ProjectConsultant = {
           ...consultant,
           quote: quotes[consultant.email] || 0
         };
+        toast.success(`Added ${consultant.name} to the project`);
         return [...prev, newConsultant];
       }
     });
@@ -73,6 +75,7 @@ export default function ProjectDetail() {
             : consultant
         )
       );
+      toast.success(`Updated quote for ${selectedConsultants.find(c => c.email === email)?.name}`);
     }
   };
 
@@ -137,12 +140,6 @@ export default function ProjectDetail() {
               </div>
             ))}
           </div>
-          <Button 
-            className="w-full md:w-auto"
-            onClick={() => toast.success("Assignments saved successfully")}
-          >
-            Save Assignments
-          </Button>
         </TabsContent>
 
         <TabsContent value="engagement">
