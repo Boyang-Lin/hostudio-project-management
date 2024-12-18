@@ -9,7 +9,144 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      consultant_groups: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      consultants: {
+        Row: {
+          address: string | null
+          company: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          specialty: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          company: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          specialty: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          company?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          specialty?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      project_consultants: {
+        Row: {
+          consultant_id: string
+          created_at: string
+          id: string
+          project_id: string
+          quote: number
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          consultant_id: string
+          created_at?: string
+          id?: string
+          project_id: string
+          quote: number
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          consultant_id?: string
+          created_at?: string
+          id?: string
+          project_id?: string
+          quote?: number
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_consultants_consultant_id_fkey"
+            columns: ["consultant_id"]
+            isOneToOne: false
+            referencedRelation: "consultants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_consultants_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          client_email: string
+          client_name: string
+          client_phone: string
+          construction_cost: number
+          created_at: string
+          id: string
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          client_email: string
+          client_name: string
+          client_phone: string
+          construction_cost: number
+          created_at?: string
+          id?: string
+          status: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          client_email?: string
+          client_name?: string
+          client_phone?: string
+          construction_cost?: number
+          created_at?: string
+          id?: string
+          status?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
