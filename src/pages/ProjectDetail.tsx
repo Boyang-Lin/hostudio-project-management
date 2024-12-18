@@ -7,7 +7,7 @@ import { ConsultantTasks } from "@/components/ConsultantTasks";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { consultantGroups, projects, Consultant } from "../data/mockData";
+import { consultantGroups, projects, ProjectConsultant, Consultant } from "../data/mockData";
 import { PaymentManagement } from "@/components/PaymentManagement";
 
 interface Task {
@@ -24,7 +24,7 @@ interface ConsultantTasks {
 export default function ProjectDetail() {
   const { id } = useParams();
   const project = projects.find((p) => p.id === id);
-  const [selectedConsultants, setSelectedConsultants] = useState<string[]>(
+  const [selectedConsultants, setSelectedConsultants] = useState<ProjectConsultant[]>(
     project?.consultants || []
   );
   const [activeTab, setActiveTab] = useState("details");
@@ -35,11 +35,11 @@ export default function ProjectDetail() {
     return <div>Project not found</div>;
   }
 
-  const handleConsultantToggle = (consultantName: string) => {
+  const handleConsultantToggle = (consultant: Consultant) => {
     setSelectedConsultants((prev) =>
-      prev.includes(consultantName)
-        ? prev.filter((name) => name !== consultantName)
-        : [...prev, consultantName]
+      prev.some(c => c.email === consultant.email)
+        ? prev.filter((c) => c.email !== consultant.email)
+        : [...prev, { ...consultant, quote: 0 }]
     );
   };
 
@@ -59,7 +59,7 @@ export default function ProjectDetail() {
   // Get selected consultants with their full information
   const selectedConsultantsData = Object.values(consultantGroups)
     .flatMap(group => group.consultants)
-    .filter(consultant => selectedConsultants.includes(consultant.name));
+    .filter(consultant => selectedConsultants.some(c => c.email === consultant.email));
 
   return (
     <div className="container mx-auto py-8">
@@ -93,9 +93,9 @@ export default function ProjectDetail() {
                     <div key={consultant.email} className="relative">
                       <div className="absolute top-4 right-4 z-10">
                         <Checkbox
-                          checked={selectedConsultants.includes(consultant.name)}
+                          checked={selectedConsultants.some(c => c.email === consultant.email)}
                           onCheckedChange={() =>
-                            handleConsultantToggle(consultant.name)
+                            handleConsultantToggle(consultant)
                           }
                         />
                       </div>
@@ -116,7 +116,7 @@ export default function ProjectDetail() {
               {Object.entries(consultantGroups).map(([key, group]) => (
                 <div key={key} className="space-y-4">
                   {group.consultants
-                    .filter(consultant => selectedConsultants.includes(consultant.name))
+                    .filter(consultant => selectedConsultants.some(c => c.email === consultant.email))
                     .map(consultant => (
                       <div
                         key={consultant.email}

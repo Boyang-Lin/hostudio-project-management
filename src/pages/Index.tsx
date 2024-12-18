@@ -5,22 +5,46 @@ import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { Project, ProjectConsultant } from "../data/mockData";
 
 // Temporary mock data
-const projects = [
+const projects: Project[] = [
   {
     id: "1",
     title: "Website Redesign",
-    status: "active" as const,
+    status: "active",
     dueDate: "2024-04-30",
-    consultants: ["John Doe", "Jane Smith"],
+    consultants: [
+      {
+        name: "John Doe",
+        email: "john@example.com",
+        phone: "(555) 123-4567",
+        specialty: "UI/UX Design",
+        quote: 15000
+      },
+      {
+        name: "Jane Smith",
+        email: "jane@example.com",
+        phone: "(555) 234-5678",
+        specialty: "Urban Planner",
+        quote: 18000
+      }
+    ],
   },
   {
     id: "2",
     title: "Mobile App Development",
-    status: "on-hold" as const,
+    status: "on-hold",
     dueDate: "2024-05-15",
-    consultants: ["Mike Johnson"],
+    consultants: [
+      {
+        name: "Mike Johnson",
+        email: "mike@example.com",
+        phone: "(555) 456-7890",
+        specialty: "Landscape Architect",
+        quote: 20000
+      }
+    ],
   },
 ];
 

@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Payment, Consultant } from "../data/mockData";
+import { ProjectConsultant, Payment } from "../data/mockData";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
 interface PaymentManagementProps {
-  consultants: Consultant[];
+  consultants: ProjectConsultant[];
 }
 
 export function PaymentManagement({ consultants }: PaymentManagementProps) {
@@ -21,7 +21,7 @@ export function PaymentManagement({ consultants }: PaymentManagementProps) {
     .filter(payment => payment.status === 'paid')
     .reduce((sum, payment) => sum + payment.amount, 0);
 
-  const handleCreateInvoice = (consultant: Consultant) => {
+  const handleCreateInvoice = (consultant: ProjectConsultant) => {
     const amount = newInvoiceAmount[consultant.email];
     const invoiceName = newInvoiceName[consultant.email];
 
@@ -68,7 +68,7 @@ export function PaymentManagement({ consultants }: PaymentManagementProps) {
     toast.success(`Payment marked as paid`);
   };
 
-  const getRemainingQuote = (consultant: Consultant) => {
+  const getRemainingQuote = (consultant: ProjectConsultant) => {
     const totalInvoiced = payments
       .filter(p => p.consultantEmail === consultant.email)
       .reduce((sum, payment) => sum + payment.amount, 0);
