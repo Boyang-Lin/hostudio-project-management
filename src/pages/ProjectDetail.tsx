@@ -13,7 +13,8 @@ import { EngagementTabContent } from "@/components/EngagementTabContent";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { transformDatabaseConsultant } from "../types/project";
+import { transformDatabaseConsultant, transformToDatabase } from "../types/project";
+import { BaseConsultant, ProjectConsultant } from "../types/consultant";
 
 interface Task {
   id: string;
@@ -30,7 +31,7 @@ export default function ProjectDetail() {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("details");
-  const [selectedConsultant, setSelectedConsultant] = useState(null);
+  const [selectedConsultant, setSelectedConsultant] = useState<BaseConsultant | null>(null);
   const [consultantTasks, setConsultantTasks] = useState<ConsultantTasks>({});
 
   // Fetch project data

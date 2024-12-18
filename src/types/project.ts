@@ -1,15 +1,4 @@
-import { ProjectConsultant } from './consultant';
-
-export interface Project {
-  id: string;
-  title: string;
-  status: "active" | "completed" | "on-hold";
-  consultants: ProjectConsultant[];
-  clientName: string;
-  clientEmail: string;
-  clientPhone: string;
-  constructionCost: number;
-}
+import { BaseConsultant, ProjectConsultant } from './consultant';
 
 export interface DatabaseProject {
   id: string;
@@ -39,18 +28,18 @@ export const transformDatabaseConsultant = (consultant: DatabaseProjectConsultan
   name: consultant.name,
   email: consultant.email,
   specialty: consultant.specialty,
-  quote: consultant.quote || 0, // Ensure quote is always a number
+  quote: consultant.quote || 0,
   status: consultant.status as 'in-progress' | 'completed' | 'on-hold' | undefined,
   phone: 'N/A', // Default value
   company: 'N/A' // Default value
 });
 
 // Transform frontend consultant to database format
-export const transformToDatabase = (projectId: string, consultant: ProjectConsultant) => ({
+export const transformToDatabase = (projectId: string, consultant: BaseConsultant) => ({
   project_id: projectId,
   email: consultant.email,
   name: consultant.name,
   specialty: consultant.specialty,
-  quote: consultant.quote || 0,
-  status: consultant.status || 'in-progress'
+  quote: 0, // Default value
+  status: 'in-progress' // Default value
 });
