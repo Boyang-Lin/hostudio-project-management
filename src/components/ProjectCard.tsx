@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Users, Timer, CheckCircle2, Pause, Mail, Phone, DollarSign, User } from "lucide-react";
+import { Timer, CheckCircle2, Pause, Mail, Phone, DollarSign, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface ProjectCardProps {
   id?: string;
@@ -26,25 +27,25 @@ const getStatusDetails = (status: string) => {
     case 'active':
       return { 
         icon: Timer, 
-        bg: 'bg-yellow-500',
+        color: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
         text: 'In Progress'
       };
     case 'completed':
       return { 
         icon: CheckCircle2, 
-        bg: 'bg-green-500',
+        color: 'bg-green-500/10 text-green-500 hover:bg-green-500/20',
         text: 'Completed'
       };
     case 'on-hold':
       return { 
         icon: Pause, 
-        bg: 'bg-red-500',
+        color: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
         text: 'On Hold'
       };
     default:
       return { 
         icon: Timer, 
-        bg: 'bg-yellow-500',
+        color: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
         text: 'In Progress'
       };
   }
@@ -60,6 +61,7 @@ export function ProjectCard({
   onStatusChange 
 }: ProjectCardProps) {
   const currentStatus = getStatusDetails(status);
+  const StatusIcon = currentStatus.icon;
 
   const handleStatusSelect = (newStatus: "active" | "completed" | "on-hold", e: React.MouseEvent) => {
     e.preventDefault();
@@ -80,33 +82,44 @@ export function ProjectCard({
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow relative flex flex-col h-full">
+    <Card className="group hover:shadow-lg transition-all duration-300 relative flex flex-col h-full border-border/50">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-xl font-bold text-primary">{title}</CardTitle>
-        <Badge variant="outline" className={`${currentStatus.bg} text-white`}>
-          <currentStatus.icon className="mr-1 h-4 w-4" />
+        <CardTitle className="text-xl font-bold text-primary line-clamp-1">{title}</CardTitle>
+        <Badge 
+          variant="outline" 
+          className={cn("transition-colors", currentStatus.color)}
+        >
+          <StatusIcon className="mr-1 h-4 w-4" />
           {currentStatus.text}
         </Badge>
       </CardHeader>
-      <CardContent className="flex-grow">
+      <CardContent className="flex-grow space-y-4">
         <div className="space-y-3">
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-muted-foreground">
             <User className="mr-2 h-4 w-4" />
-            {client_name}
+            <span className="line-clamp-1">{client_name}</span>
           </div>
-          <div className="flex items-center text-sm text-gray-600">
-            <Mail className="mr-2 h-4 w-4" />
-            <a href={`mailto:${client_email}`} className="hover:text-primary">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Mail className="mr-2 h-4 w-4 flex-shrink-0" />
+            <a 
+              href={`mailto:${client_email}`} 
+              className="hover:text-primary transition-colors line-clamp-1"
+              onClick={(e) => e.stopPropagation()}
+            >
               {client_email}
             </a>
           </div>
-          <div className="flex items-center text-sm text-gray-600">
-            <Phone className="mr-2 h-4 w-4" />
-            <a href={`tel:${client_phone}`} className="hover:text-primary">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Phone className="mr-2 h-4 w-4 flex-shrink-0" />
+            <a 
+              href={`tel:${client_phone}`} 
+              className="hover:text-primary transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
               {client_phone}
             </a>
           </div>
-          <div className="flex items-center text-sm font-semibold">
+          <div className="flex items-center text-sm font-medium">
             <DollarSign className="mr-2 h-4 w-4" />
             {formatCurrency(construction_cost)}
           </div>
@@ -115,7 +128,11 @@ export function ProjectCard({
       <CardFooter className="pt-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button variant="outline" size="sm" className="w-full">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full group-hover:border-primary/50 transition-colors"
+            >
               Change Status
             </Button>
           </DropdownMenuTrigger>

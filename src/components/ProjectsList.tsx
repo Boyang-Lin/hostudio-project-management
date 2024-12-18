@@ -3,7 +3,7 @@ import { ProjectCard } from "./ProjectCard";
 import { ProjectEditDialog } from "./ProjectEditDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { Button } from "./ui/button";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -108,7 +108,7 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -118,8 +118,8 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold text-primary">Projects</h1>
         <div className="flex w-full sm:w-auto gap-4">
-          <div className="relative flex-grow sm:flex-grow-0">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <div className="relative flex-grow sm:flex-grow-0 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search projects..."
               value={searchTerm}
@@ -127,15 +127,25 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
               className="pl-10 w-full"
             />
           </div>
-          <Button onClick={onNewProject}>
+          <Button onClick={onNewProject} className="whitespace-nowrap">
             <Plus className="mr-2 h-4 w-4" /> New Project
           </Button>
         </div>
       </div>
       
       {filteredProjects.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          {searchTerm ? "No projects found matching your search." : "No projects yet. Create your first project to get started!"}
+        <div className="text-center py-12 bg-muted/30 rounded-lg border border-border/50">
+          <div className="max-w-md mx-auto space-y-4">
+            <Search className="h-12 w-12 text-muted-foreground mx-auto" />
+            <h3 className="text-lg font-semibold">
+              {searchTerm ? "No projects found" : "No projects yet"}
+            </h3>
+            <p className="text-muted-foreground">
+              {searchTerm 
+                ? "Try adjusting your search terms or clear the search to see all projects."
+                : "Create your first project to get started!"}
+            </p>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
