@@ -3,7 +3,7 @@ import { ConsultantCard } from "./ConsultantCard";
 import { ConsultantEditDialog } from "./ConsultantEditDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { Button } from "./ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Edit } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -26,13 +26,11 @@ export function ConsultantsList({
   const handleConsultantUpdate = (updatedConsultant: Consultant, newGroupKey: string) => {
     const newGroups = { ...consultantGroups };
     
-    // If group changed, remove from old group and add to new group
     if (editingConsultant && editingConsultant.groupKey !== newGroupKey) {
       newGroups[editingConsultant.groupKey].consultants = newGroups[editingConsultant.groupKey].consultants
         .filter(c => c.email !== editingConsultant.consultant.email);
       newGroups[newGroupKey].consultants.push(updatedConsultant);
     } else if (editingConsultant) {
-      // Just update the consultant in the current group
       newGroups[editingConsultant.groupKey].consultants = newGroups[editingConsultant.groupKey].consultants
         .map(c => c.email === editingConsultant.consultant.email ? updatedConsultant : c);
     }
@@ -52,15 +50,28 @@ export function ConsultantsList({
     }
   };
 
+  const handleGroupChange = (consultantEmail: string, currentGroup: string, newGroup: string) => {
+    const newGroups = { ...consultantGroups };
+    const consultant = newGroups[currentGroup].consultants.find(c => c.email === consultantEmail);
+    
+    if (consultant) {
+      newGroups[currentGroup].consultants = newGroups[currentGroup].consultants
+        .filter(c => c.email !== consultantEmail);
+      newGroups[newGroup].consultants.push(consultant);
+      onConsultantGroupsChange(newGroups);
+      toast.success("Consultant group updated successfully");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-primary">Consultants</h2>
         <div className="space-x-2">
-          <Button variant="outline" onClick={onNewGroup}>
+          <Button variant="ghost" onClick={onNewGroup}>
             <Plus className="mr-2 h-4 w-4" /> New Group
           </Button>
-          <Button onClick={onNewConsultant}>
+          <Button variant="ghost" onClick={onNewConsultant}>
             <Plus className="mr-2 h-4 w-4" /> Add Consultant
           </Button>
         </div>
@@ -68,7 +79,20 @@ export function ConsultantsList({
 
       {Object.entries(consultantGroups).map(([key, group]) => (
         <div key={key} className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">{group.title}</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold">{group.title}</h3>
+            <Button variant="ghost" size="sm" onClick={() => {
+              const newTitle = prompt("Enter new group title:", group.title);
+              if (newTitle && newTitle !== group.title) {
+                const newGroups = { ...consultantGroups };
+                newGroups[key].title = newTitle;
+                onConsultantGroupsChange(newGroups);
+                toast.success("Group title updated successfully");
+              }
+            }}>
+              <Edit className="h-4 w-4" />
+            </Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {group.consultants.map((consultant) => (
               <div key={consultant.email} className="relative group">
@@ -89,7 +113,12 @@ export function ConsultantsList({
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-                <ConsultantCard {...consultant} />
+                <ConsultantCard 
+                  {...consultant} 
+                  group={key}
+                  groups={consultantGroups}
+                  onGroupChange={(newGroup) => handleGroupChange(consultant.email, key, newGroup)}
+                />
               </div>
             ))}
           </div>

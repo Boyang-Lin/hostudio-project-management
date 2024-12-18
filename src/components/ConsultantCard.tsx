@@ -5,6 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -24,6 +31,9 @@ interface ConsultantCardProps {
   onStatusChange?: (status: 'in-progress' | 'completed' | 'on-hold') => void;
   showQuoteInput?: boolean;
   showStatus?: boolean;
+  group?: string;
+  onGroupChange?: (newGroup: string) => void;
+  groups?: Record<string, { title: string; consultants: any[] }>;
 }
 
 export function ConsultantCard({ 
@@ -38,7 +48,10 @@ export function ConsultantCard({
   onQuoteChange,
   onStatusChange,
   showQuoteInput,
-  showStatus
+  showStatus,
+  group,
+  onGroupChange,
+  groups
 }: ConsultantCardProps) {
   const getStatusDetails = (status: string) => {
     switch (status) {
@@ -150,6 +163,22 @@ export function ConsultantCard({
               ) : (
                 `Quote: $${quote?.toLocaleString()}`
               )}
+            </div>
+          )}
+          {groups && onGroupChange && (
+            <div className="flex items-center text-sm text-gray-600">
+              <Select value={group} onValueChange={onGroupChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select group" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(groups).map(([key, group]) => (
+                    <SelectItem key={key} value={key}>
+                      {group.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
         </div>
