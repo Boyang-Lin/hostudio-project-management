@@ -8,7 +8,7 @@ export interface BaseConsultant {
 }
 
 export interface ProjectConsultant extends BaseConsultant {
-  quote?: number;
+  quote: number; // Changed from optional to required
   status?: 'in-progress' | 'completed' | 'on-hold';
 }
 

@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { transformDatabaseConsultant, transformToDatabase } from "../types/project";
 import { BaseConsultant, ProjectConsultant } from "../types/consultant";
+import { consultantGroups as initialConsultantGroups } from "../data/mockData";
 
 interface Task {
   id: string;
@@ -29,6 +30,7 @@ const ProjectDetail = () => {
   const [consultants, setConsultants] = useState<ProjectConsultant[]>([]);
   const [tasks, setTasks] = useState<ConsultantTasks>({});
   const [selectedConsultant, setSelectedConsultant] = useState<BaseConsultant | null>(null);
+  const [consultantGroups, setConsultantGroups] = useState(initialConsultantGroups);
 
   const { data: project, isLoading: isLoadingProject } = useQuery({
     queryKey: ["project", id],
@@ -112,9 +114,10 @@ const ProjectDetail = () => {
         constructionCost={project.construction_cost}
       />
       <ConsultantGroupSelect
-        selectedConsultant={selectedConsultant}
-        setSelectedConsultant={setSelectedConsultant}
-        onAddConsultant={handleAddConsultant}
+        consultantEmail={selectedConsultant?.email || ''}
+        currentGroup=""
+        groups={consultantGroups}
+        onGroupChange={() => {}}
       />
       <Tabs defaultValue="engagement">
         <TabsList>
@@ -130,10 +133,15 @@ const ProjectDetail = () => {
           />
         </TabsContent>
         <TabsContent value="payment">
-          <PaymentManagement />
+          <PaymentManagement consultants={consultants} />
         </TabsContent>
       </Tabs>
-      <ConsultantsList />
+      <ConsultantsList
+        consultantGroups={consultantGroups}
+        onConsultantGroupsChange={setConsultantGroups}
+        onNewConsultant={() => {}}
+        onNewGroup={() => {}}
+      />
       <ConsultantTasks 
         consultant={selectedConsultant || {
           name: '',
