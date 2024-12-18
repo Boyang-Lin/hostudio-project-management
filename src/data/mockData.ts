@@ -17,6 +17,15 @@ export interface ConsultantGroup {
   consultants: Consultant[];
 }
 
+export interface Payment {
+  consultantEmail: string;
+  amount: number;
+  status: 'pending' | 'paid';
+  invoiceDate: string;
+  paidDate?: string;
+  invoiceName: string;
+}
+
 export interface Project {
   id: string;
   title: string;
