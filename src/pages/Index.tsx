@@ -173,26 +173,31 @@ export default function Index() {
   });
 
   // Add new consultant mutation
+
   const addConsultantMutation = useMutation({
     mutationFn: async (newConsultant: any) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
 
-      console.log('Adding new consultant:', newConsultant); // Debug log
+      console.log('Raw consultant data:', newConsultant); // Debug log
 
-      const { group, ...consultantData } = newConsultant;
+      // Transform camelCase to snake_case for database
+      const consultantData = {
+        name: newConsultant.name,
+        email: newConsultant.email,
+        phone: newConsultant.phone || 'N/A',
+        specialty: newConsultant.specialty || 'other',
+        company: newConsultant.company || 'N/A',
+        address: newConsultant.address || 'N/A',
+        group_id: newConsultant.group,
+        owner_id: user.id
+      };
       
+      console.log('Formatted consultant data:', consultantData); // Debug log
+
       const { data, error } = await supabase
         .from('consultants')
-        .insert([{ 
-          ...consultantData,
-          group_id: group,
-          owner_id: user.id,
-          specialty: consultantData.specialty || 'other', // Ensure specialty is set
-          phone: consultantData.phone || 'N/A',
-          company: consultantData.company || 'N/A',
-          address: consultantData.address || 'N/A'
-        }])
+        .insert([consultantData])
         .select();
       
       if (error) {
@@ -208,7 +213,7 @@ export default function Index() {
       toast.success('Consultant added successfully');
     },
     onError: (error) => {
-      console.error('Mutation error:', error); // Debug log
+      console.error('Consultant mutation error:', error); // Debug log
       toast.error('Failed to add consultant: ' + error.message);
     }
   });
