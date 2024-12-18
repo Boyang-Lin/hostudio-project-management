@@ -42,7 +42,56 @@ export default function Index() {
   }
 
   if (!session) {
-    return <AuthForm />;
+    return (
+      <div className="flex flex-col md:flex-row gap-8 justify-center items-start p-8">
+        <div className="w-full md:w-96">
+          <div className="bg-white p-8 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold text-center mb-6">Sign In</h2>
+            <Auth
+              supabaseClient={supabase}
+              appearance={{ 
+                theme: ThemeSupa,
+                variables: {
+                  default: {
+                    colors: {
+                      brand: '#2563eb',
+                      brandAccent: '#1d4ed8',
+                    },
+                  },
+                },
+              }}
+              view="sign_in"
+              providers={[]}
+              redirectTo={window.location.origin}
+              theme="light"
+            />
+          </div>
+        </div>
+        <div className="w-full md:w-96">
+          <div className="bg-white p-8 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
+            <Auth
+              supabaseClient={supabase}
+              appearance={{ 
+                theme: ThemeSupa,
+                variables: {
+                  default: {
+                    colors: {
+                      brand: '#2563eb',
+                      brandAccent: '#1d4ed8',
+                    },
+                  },
+                },
+              }}
+              view="sign_up"
+              providers={[]}
+              redirectTo={window.location.origin}
+              theme="light"
+            />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return <Dashboard />;

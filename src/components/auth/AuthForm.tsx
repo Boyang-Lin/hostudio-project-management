@@ -21,6 +21,7 @@ export const AuthForm = () => {
             },
           }}
           providers={[]}
+          view="sign_in"
           redirectTo={window.location.origin}
           localization={{
             variables: {
