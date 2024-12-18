@@ -15,7 +15,6 @@ interface ConsultantEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (consultant: Consultant, newGroup: string) => void;
-  onGroupTitleChange?: (groupKey: string, newTitle: string) => void;
 }
 
 export function ConsultantEditDialog({
@@ -25,7 +24,6 @@ export function ConsultantEditDialog({
   open,
   onOpenChange,
   onSave,
-  onGroupTitleChange,
 }: ConsultantEditDialogProps) {
   const form = useForm({
     defaultValues: {
@@ -36,7 +34,6 @@ export function ConsultantEditDialog({
       company: "",
       address: "",
       group: currentGroup,
-      groupTitle: groups[currentGroup]?.title || "",
     },
   });
 
@@ -45,18 +42,12 @@ export function ConsultantEditDialog({
       form.reset({
         ...consultant,
         group: currentGroup,
-        groupTitle: groups[currentGroup]?.title || "",
       });
     }
-  }, [consultant, currentGroup, form, groups]);
+  }, [consultant, currentGroup, form]);
 
   const handleSubmit = (data: any) => {
-    const { group, groupTitle, ...consultantData } = data;
-    
-    if (onGroupTitleChange && groupTitle !== groups[group].title) {
-      onGroupTitleChange(group, groupTitle);
-    }
-    
+    const { group, ...consultantData } = data;
     onSave(consultantData as Consultant, group);
     onOpenChange(false);
     form.reset();
@@ -166,27 +157,6 @@ export function ConsultantEditDialog({
                       ))}
                     </SelectContent>
                   </Select>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="groupTitle"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Group Title</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter group title" 
-                      {...field} 
-                      onChange={(e) => {
-                        field.onChange(e);
-                        if (onGroupTitleChange) {
-                          onGroupTitleChange(form.getValues().group, e.target.value);
-                        }
-                      }}
-                    />
-                  </FormControl>
                 </FormItem>
               )}
             />
