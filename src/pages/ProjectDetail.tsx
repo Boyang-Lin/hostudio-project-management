@@ -200,7 +200,6 @@ export default function ProjectDetail() {
             <ConsultantTasks
               consultant={selectedConsultant}
               onClose={() => setSelectedConsultant(null)}
-              allTasks={allTasks}
               onTasksUpdate={handleTasksUpdate}
             />
           </div>
