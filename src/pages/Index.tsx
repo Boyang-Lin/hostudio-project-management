@@ -10,6 +10,7 @@ import { LogOut } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { transformDatabaseProject, type DatabaseProject, type Project } from "@/types/project";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -38,21 +39,36 @@ export default function Index() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Fetch projects
+  // Fetch projects with their consultants
   const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch projects
+      const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data;
+      if (projectsError) throw projectsError;
+
+      // Fetch consultants for each project
+      const projectsWithConsultants: Project[] = await Promise.all(
+        (projectsData as DatabaseProject[]).map(async (project) => {
+          const { data: consultantsData, error: consultantsError } = await supabase
+            .from('project_consultants')
+            .select('*')
+            .eq('project_id', project.id);
+
+          if (consultantsError) throw consultantsError;
+
+          return transformDatabaseProject(project, consultantsData || []);
+        })
+      );
+
+      return projectsWithConsultants;
     }
   });
 
-  // Fetch consultant groups with their consultants
   const { data: consultantGroups = {}, isLoading: isLoadingGroups } = useQuery({
     queryKey: ['consultant_groups'],
     queryFn: async () => {

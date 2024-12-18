@@ -10,6 +10,18 @@ export interface DatabaseProject {
   construction_cost: number;
   created_at: string;
   updated_at: string;
+  owner_id: string;
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  status: "active" | "completed" | "on-hold";
+  consultants: ProjectConsultant[];
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  constructionCost: number;
 }
 
 export interface DatabaseConsultant {
@@ -21,6 +33,18 @@ export interface DatabaseConsultant {
   status: 'in-progress' | 'completed' | 'on-hold';
   created_at: string;
 }
+
+// Transform database project to frontend format
+export const transformDatabaseProject = (dbProject: DatabaseProject, consultants: ProjectConsultant[] = []): Project => ({
+  id: dbProject.id,
+  title: dbProject.title,
+  status: dbProject.status,
+  consultants,
+  clientName: dbProject.client_name,
+  clientEmail: dbProject.client_email,
+  clientPhone: dbProject.client_phone,
+  constructionCost: dbProject.construction_cost
+});
 
 // Transform database consultant to frontend format
 export const transformDatabaseConsultant = (consultant: DatabaseConsultant): ProjectConsultant => ({
