@@ -1,9 +1,12 @@
 import { BaseConsultant, ProjectConsultant } from './consultant';
 
+export type ProjectStatus = "active" | "completed" | "on-hold";
+export type ConsultantStatus = "in-progress" | "completed" | "on-hold";
+
 export interface DatabaseProject {
   id: string;
   title: string;
-  status: "active" | "completed" | "on-hold";
+  status: ProjectStatus;
   client_name: string;
   client_email: string;
   client_phone: string;
@@ -13,10 +16,20 @@ export interface DatabaseProject {
   owner_id: string;
 }
 
+export interface DatabaseConsultant {
+  project_id: string;
+  email: string;
+  name: string;
+  specialty: string;
+  quote: number | null;
+  status: ConsultantStatus;
+  created_at: string;
+}
+
 export interface Project {
   id: string;
   title: string;
-  status: "active" | "completed" | "on-hold";
+  status: ProjectStatus;
   consultants: ProjectConsultant[];
   clientName: string;
   clientEmail: string;
@@ -24,18 +37,8 @@ export interface Project {
   constructionCost: number;
 }
 
-export interface DatabaseConsultant {
-  project_id: string;
-  email: string;
-  name: string;
-  specialty: string;
-  quote: number | null;
-  status: 'in-progress' | 'completed' | 'on-hold';
-  created_at: string;
-}
-
 // Transform database project to frontend format
-export const transformDatabaseProject = (dbProject: DatabaseProject, consultants: ProjectConsultant[] = []): Project => ({
+export const transformDatabaseProject = (dbProject: DatabaseProject, consultants: ProjectConsultant[]): Project => ({
   id: dbProject.id,
   title: dbProject.title,
   status: dbProject.status,
@@ -53,18 +56,7 @@ export const transformDatabaseConsultant = (consultant: DatabaseConsultant): Pro
   specialty: consultant.specialty,
   quote: consultant.quote || 0,
   status: consultant.status,
-  phone: 'N/A', // Default value
-  company: 'N/A', // Default value
-  address: 'N/A' // Default value
-});
-
-// Transform frontend consultant to database format
-export const transformToDatabase = (projectId: string, consultant: BaseConsultant): DatabaseConsultant => ({
-  project_id: projectId,
-  email: consultant.email,
-  name: consultant.name,
-  specialty: consultant.specialty,
-  quote: 0, // Default value
-  status: 'in-progress', // Default value
-  created_at: new Date().toISOString()
+  phone: 'N/A',
+  company: 'N/A',
+  address: 'N/A'
 });
