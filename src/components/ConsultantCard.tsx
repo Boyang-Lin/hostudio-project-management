@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { ConsultantCardHeader } from "./consultant/ConsultantCardHeader";
 import { ConsultantCardContent } from "./consultant/ConsultantCardContent";
+import { ConsultantGroup } from "../data/mockData";
 
 interface ConsultantCardProps {
   name: string;
@@ -17,6 +18,7 @@ interface ConsultantCardProps {
   showQuoteInput?: boolean;
   showStatus?: boolean;
   groups?: string[];
+  consultantGroups?: Record<string, ConsultantGroup>;
 }
 
 export function ConsultantCard({ 
