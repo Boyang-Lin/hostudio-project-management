@@ -7,6 +7,8 @@ import { Plus, Trash2, Pencil } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface ProjectsListProps {
   projects: Project[];
@@ -17,6 +19,7 @@ interface ProjectsListProps {
 export function ProjectsList({ projects, onProjectsChange, onNewProject }: ProjectsListProps) {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deletingProject, setDeletingProject] = useState<Project | null>(null);
+  const queryClient = useQueryClient();
 
   const handleProjectUpdate = (updatedProject: Partial<Project>) => {
     onProjectsChange(
@@ -39,11 +42,44 @@ export function ProjectsList({ projects, onProjectsChange, onNewProject }: Proje
     );
   };
 
+  const deleteProjectMutation = useMutation({
+    mutationFn: async (projectId: string) => {
+      // First delete all associated project consultants
+      const { error: consultantsError } = await supabase
+        .from('project_consultants')
+        .delete()
+        .eq('project_id', projectId);
+      
+      if (consultantsError) {
+        console.error('Error deleting project consultants:', consultantsError);
+        throw consultantsError;
+      }
+
+      // Then delete the project itself
+      const { error: projectError } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId);
+      
+      if (projectError) {
+        console.error('Error deleting project:', projectError);
+        throw projectError;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success("Project deleted successfully");
+      setDeletingProject(null);
+    },
+    onError: (error) => {
+      console.error('Delete project error:', error);
+      toast.error("Failed to delete project: " + error.message);
+    }
+  });
+
   const handleDeleteProject = () => {
     if (deletingProject) {
-      onProjectsChange(projects.filter(p => p.id !== deletingProject.id));
-      setDeletingProject(null);
-      toast.success("Project deleted successfully");
+      deleteProjectMutation.mutate(deletingProject.id);
     }
   };
 
@@ -105,7 +141,7 @@ export function ProjectsList({ projects, onProjectsChange, onNewProject }: Proje
         onOpenChange={(open) => !open && setDeletingProject(null)}
         onConfirm={handleDeleteProject}
         title="Delete Project"
-        description="Are you sure you want to delete this project? This action cannot be undone."
+        description="Are you sure you want to delete this project? This action cannot be undone and will remove all associated consultant data."
       />
     </div>
   );
