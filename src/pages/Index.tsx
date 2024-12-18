@@ -162,22 +162,37 @@ export default function Index() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
 
+      console.log('Adding new consultant:', newConsultant); // Debug log
+
       const { group, ...consultantData } = newConsultant;
-      const { error } = await supabase
+      
+      const { data, error } = await supabase
         .from('consultants')
         .insert([{ 
           ...consultantData,
           group_id: group,
-          owner_id: user.id
-        }]);
+          owner_id: user.id,
+          specialty: consultantData.specialty || 'other', // Ensure specialty is set
+          phone: consultantData.phone || 'N/A',
+          company: consultantData.company || 'N/A',
+          address: consultantData.address || 'N/A'
+        }])
+        .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding consultant:', error); // Debug log
+        throw error;
+      }
+      
+      console.log('Successfully added consultant:', data); // Debug log
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['consultant_groups'] });
       toast.success('Consultant added successfully');
     },
     onError: (error) => {
+      console.error('Mutation error:', error); // Debug log
       toast.error('Failed to add consultant: ' + error.message);
     }
   });
@@ -231,6 +246,7 @@ export default function Index() {
         onOpenChange={setShowNewConsultantDialog}
         groups={consultantGroups}
         onSave={(newConsultant) => {
+          console.log('Saving new consultant:', newConsultant); // Debug log
           addConsultantMutation.mutate(newConsultant);
           setShowNewConsultantDialog(false);
         }}
