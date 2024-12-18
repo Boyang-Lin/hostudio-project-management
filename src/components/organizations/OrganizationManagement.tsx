@@ -3,18 +3,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Users, UserPlus, Settings, FolderPlus } from "lucide-react";
+import { UserPlus, FolderPlus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { OrganizationList } from "./OrganizationList";
+import { MembersList } from "./MembersList";
+import { Organization, OrganizationMember, Member } from "./types";
 
 export function OrganizationManagement() {
   const [showNewOrgDialog, setShowNewOrgDialog] = useState(false);
   const [newOrgName, setNewOrgName] = useState("");
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [selectedOrg, setSelectedOrg] = useState<{ id: string; name: string } | null>(null);
+  const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const queryClient = useQueryClient();
 
   const { data: organizations = [], isLoading: orgsLoading } = useQuery({
@@ -36,7 +37,7 @@ export function OrganizationManagement() {
         .in('id', memberships?.map(m => m.organization_id) || []);
 
       if (orgsError) throw orgsError;
-      return orgs;
+      return orgs as Organization[];
     }
   });
 
@@ -51,14 +52,19 @@ export function OrganizationManagement() {
         .select(`
           user_id,
           role,
-          profiles:user_id (
+          profiles (
             username
           )
         `)
         .eq('organization_id', selectedOrg.id);
 
       if (error) throw error;
-      return data;
+
+      return (data as OrganizationMember[]).map(member => ({
+        user_id: member.user_id,
+        role: member.role,
+        profile_username: member.profiles?.username || 'Unknown User'
+      })) as Member[];
     }
   });
 
@@ -67,7 +73,6 @@ export function OrganizationManagement() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Create organization
       const { data: org, error: orgError } = await supabase
         .from('organizations')
         .insert([{ name }])
@@ -76,7 +81,6 @@ export function OrganizationManagement() {
 
       if (orgError) throw orgError;
 
-      // Add creator as admin
       const { error: memberError } = await supabase
         .from('organization_members')
         .insert([{
@@ -102,8 +106,6 @@ export function OrganizationManagement() {
 
   const inviteMemberMutation = useMutation({
     mutationFn: async ({ email, organizationId }: { email: string; organizationId: string }) => {
-      // For now, we'll just create the member directly
-      // In a real app, you'd want to send an invitation email
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id')
@@ -161,32 +163,12 @@ export function OrganizationManagement() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {organizations.map((org) => (
-          <Card 
-            key={org.id} 
-            className={`cursor-pointer transition-shadow hover:shadow-lg ${
-              selectedOrg?.id === org.id ? 'ring-2 ring-primary' : ''
-            }`}
-            onClick={() => setSelectedOrg(org)}
-          >
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <span>{org.name}</span>
-                <Settings className="h-4 w-4 text-muted-foreground" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  {members.length} members
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <OrganizationList
+        organizations={organizations}
+        selectedOrgId={selectedOrg?.id || null}
+        membersCount={members.length}
+        onSelectOrg={setSelectedOrg}
+      />
 
       {selectedOrg && (
         <div className="mt-8 space-y-4">
@@ -197,18 +179,7 @@ export function OrganizationManagement() {
               Invite Member
             </Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {members.map((member) => (
-              <Card key={member.user_id}>
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-center">
-                    <span>{member.profiles?.username}</span>
-                    <Badge>{member.role}</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <MembersList members={members} />
         </div>
       )}
 
