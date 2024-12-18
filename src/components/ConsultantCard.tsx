@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Phone, DollarSign, CheckCircle2, Pause, Timer, MapPin } from "lucide-react";
+import { Mail, Phone, DollarSign, CheckCircle2, Pause, Timer, MapPin, Building } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link } from "react-router-dom";
 
 interface ConsultantCardProps {
   name: string;
@@ -91,8 +92,8 @@ export function ConsultantCard({
 
   const currentStatus = status ? getStatusDetails(status) : null;
 
-  return (
-    <Card className="hover:shadow-lg transition-shadow">
+  const cardContent = (
+    <>
       <CardHeader className="flex flex-row items-center space-x-4 pb-2">
         <Avatar className="h-12 w-12">
           <AvatarFallback className="bg-primary text-primary-foreground">
@@ -143,6 +144,10 @@ export function ConsultantCard({
             <Phone className="mr-2 h-4 w-4" />
             {phone}
           </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <Building className="mr-2 h-4 w-4" />
+            {company}
+          </div>
           {address && (
             <div className="flex items-center text-sm text-gray-600">
               <MapPin className="mr-2 h-4 w-4" />
@@ -183,6 +188,20 @@ export function ConsultantCard({
           )}
         </div>
       </CardContent>
+    </>
+  );
+
+  // If the card is being used in a project context (has status or quote input), don't make it a link
+  if (showStatus || showQuoteInput) {
+    return <Card className="hover:shadow-lg transition-shadow">{cardContent}</Card>;
+  }
+
+  // Otherwise, make it a link to the consultant detail page
+  return (
+    <Card className="hover:shadow-lg transition-shadow">
+      <Link to={`/consultant/${email}`} className="block">
+        {cardContent}
+      </Link>
     </Card>
   );
 }
