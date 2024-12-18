@@ -6,11 +6,13 @@ import { NewGroupDialog } from "@/components/NewGroupDialog";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { consultantGroups } from "@/data/mockData";
 
 export const Dashboard = () => {
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
+  const [groups, setGroups] = useState(consultantGroups);
 
   const handleNewProject = async (newProject) => {
     try {
@@ -78,6 +80,10 @@ export const Dashboard = () => {
     }
   };
 
+  const handleConsultantGroupsChange = (newGroups) => {
+    setGroups(newGroups);
+  };
+
   return (
     <div className="container mx-auto py-8 space-y-8">
       <ProjectsList
@@ -85,6 +91,8 @@ export const Dashboard = () => {
       />
 
       <ConsultantsList
+        consultantGroups={groups}
+        onConsultantGroupsChange={handleConsultantGroupsChange}
         onNewConsultant={() => setShowNewConsultantDialog(true)}
         onNewGroup={() => setShowNewGroupDialog(true)}
       />
@@ -99,6 +107,7 @@ export const Dashboard = () => {
         open={showNewConsultantDialog}
         onOpenChange={setShowNewConsultantDialog}
         onSave={handleNewConsultant}
+        groups={groups}
       />
 
       <NewGroupDialog
