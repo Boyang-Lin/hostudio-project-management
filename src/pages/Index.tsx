@@ -1,88 +1,76 @@
 import { useState, useEffect } from "react";
-import { projects as initialProjects, consultantGroups as initialConsultantGroups } from "../data/mockData";
 import { ProjectsList } from "@/components/ProjectsList";
 import { ConsultantsList } from "@/components/ConsultantsList";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
 import { NewConsultantDialog } from "@/components/NewConsultantDialog";
 import { NewGroupDialog } from "@/components/NewGroupDialog";
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function Index() {
-  const [localProjects, setLocalProjects] = useState(() => {
-    const savedProjects = localStorage.getItem('projects');
-    return savedProjects ? JSON.parse(savedProjects) : initialProjects;
-  });
-
-  const [localConsultantGroups, setLocalConsultantGroups] = useState(() => {
-    const savedGroups = localStorage.getItem('consultantGroups');
-    return savedGroups ? JSON.parse(savedGroups) : initialConsultantGroups;
-  });
-
-  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
-  const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
-  const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
-
-  // Save to localStorage whenever data changes
-  useEffect(() => {
-    localStorage.setItem('projects', JSON.stringify(localProjects));
-  }, [localProjects]);
+  const [session, setSession] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    localStorage.setItem('consultantGroups', JSON.stringify(localConsultantGroups));
-  }, [localConsultantGroups]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        toast.success("Successfully signed in!");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (!session) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="p-8 rounded-lg border">
+            <h2 className="text-2xl font-bold mb-4">Sign In</h2>
+            <Auth
+              supabaseClient={supabase}
+              appearance={{ theme: ThemeSupa }}
+              providers={[]}
+              view="sign_in"
+            />
+          </div>
+          <div className="p-8 rounded-lg border">
+            <h2 className="text-2xl font-bold mb-4">Sign Up</h2>
+            <Auth
+              supabaseClient={supabase}
+              appearance={{ theme: ThemeSupa }}
+              providers={[]}
+              view="sign_up"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 space-y-8">
       <ProjectsList
-        projects={localProjects}
-        onProjectsChange={setLocalProjects}
-        onNewProject={() => setShowNewProjectDialog(true)}
+        projects={[]}
+        onProjectsChange={() => {}}
+        onNewProject={() => {}}
       />
 
       <ConsultantsList
-        consultantGroups={localConsultantGroups}
-        onConsultantGroupsChange={setLocalConsultantGroups}
-        onNewConsultant={() => setShowNewConsultantDialog(true)}
-        onNewGroup={() => setShowNewGroupDialog(true)}
-      />
-
-      <NewProjectDialog
-        open={showNewProjectDialog}
-        onOpenChange={setShowNewProjectDialog}
-        onSave={(newProject) => {
-          setLocalProjects([...localProjects, {
-            id: (localProjects.length + 1).toString(),
-            status: "active",
-            consultants: [],
-            ...newProject
-          }]);
-        }}
-      />
-
-      <NewConsultantDialog
-        open={showNewConsultantDialog}
-        onOpenChange={setShowNewConsultantDialog}
-        groups={localConsultantGroups}
-        onSave={(newConsultant) => {
-          const groupKey = newConsultant.group;
-          const { group, ...consultantData } = newConsultant;
-          const newGroups = { ...localConsultantGroups };
-          newGroups[groupKey].consultants.push(consultantData);
-          setLocalConsultantGroups(newGroups);
-        }}
-      />
-
-      <NewGroupDialog
-        open={showNewGroupDialog}
-        onOpenChange={setShowNewGroupDialog}
-        onSave={(groupName) => {
-          setLocalConsultantGroups({
-            ...localConsultantGroups,
-            [groupName.toLowerCase()]: {
-              title: groupName,
-              consultants: [],
-            },
-          });
-        }}
+        consultantGroups={{}}
+        onConsultantGroupsChange={() => {}}
+        onNewConsultant={() => {}}
+        onNewGroup={() => {}}
       />
     </div>
   );

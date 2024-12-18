@@ -4,9 +4,11 @@ import { ProjectEditDialog } from "./ProjectEditDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { Button } from "./ui/button";
 import { Plus, Trash2, Pencil } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface ProjectsListProps {
   projects: Project[];
@@ -14,38 +16,81 @@ interface ProjectsListProps {
   onNewProject: () => void;
 }
 
-export function ProjectsList({ projects, onProjectsChange, onNewProject }: ProjectsListProps) {
+export function ProjectsList({ onNewProject }: ProjectsListProps) {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deletingProject, setDeletingProject] = useState<Project | null>(null);
+  const queryClient = useQueryClient();
 
-  const handleProjectUpdate = (updatedProject: Partial<Project>) => {
-    onProjectsChange(
-      projects.map(p =>
-        p.id === editingProject?.id
-          ? { ...p, ...updatedProject }
-          : p
-      )
-    );
+  const { data: projects = [], isLoading } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*');
+      
+      if (error) {
+        toast.error('Failed to fetch projects');
+        throw error;
+      }
+      
+      return data || [];
+    },
+  });
+
+  const handleProjectUpdate = async (updatedProject: Partial<Project>) => {
+    if (!editingProject?.id) return;
+
+    const { error } = await supabase
+      .from('projects')
+      .update(updatedProject)
+      .eq('id', editingProject.id);
+
+    if (error) {
+      toast.error('Failed to update project');
+      return;
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    setEditingProject(null);
     toast.success("Project updated successfully");
   };
 
-  const handleStatusChange = (projectId: string, newStatus: "active" | "completed" | "on-hold") => {
-    onProjectsChange(
-      projects.map(p =>
-        p.id === projectId
-          ? { ...p, status: newStatus }
-          : p
-      )
-    );
+  const handleStatusChange = async (projectId: string, newStatus: "active" | "completed" | "on-hold") => {
+    const { error } = await supabase
+      .from('projects')
+      .update({ status: newStatus })
+      .eq('id', projectId);
+
+    if (error) {
+      toast.error('Failed to update project status');
+      return;
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    toast.success("Project status updated successfully");
   };
 
-  const handleDeleteProject = () => {
-    if (deletingProject) {
-      onProjectsChange(projects.filter(p => p.id !== deletingProject.id));
-      setDeletingProject(null);
-      toast.success("Project deleted successfully");
+  const handleDeleteProject = async () => {
+    if (!deletingProject) return;
+
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', deletingProject.id);
+
+    if (error) {
+      toast.error('Failed to delete project');
+      return;
     }
+
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    setDeletingProject(null);
+    toast.success("Project deleted successfully");
   };
+
+  if (isLoading) {
+    return <div>Loading projects...</div>;
+  }
 
   return (
     <div className="space-y-6">
