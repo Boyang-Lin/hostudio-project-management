@@ -52,7 +52,7 @@ export function OrganizationManagement() {
         .select(`
           user_id,
           role,
-          profiles (
+          profiles:user_id (
             username
           )
         `)

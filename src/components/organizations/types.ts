@@ -13,7 +13,7 @@ export interface Member {
 export interface OrganizationMember {
   user_id: string;
   role: string;
-  profiles: {
-    username: string;
+  profiles?: {
+    username: string | null;
   } | null;
 }
