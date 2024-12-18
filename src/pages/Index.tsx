@@ -10,7 +10,7 @@ import { LogOut } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { transformDatabaseProject, type DatabaseProject, type Project } from "@/types/project";
+import { transformDatabaseProject, transformDatabaseConsultant, type DatabaseProject, type Project } from "@/types/project";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -61,7 +61,12 @@ export default function Index() {
 
           if (consultantsError) throw consultantsError;
 
-          return transformDatabaseProject(project, consultantsData || []);
+          // Transform each consultant to the frontend format
+          const transformedConsultants = (consultantsData || []).map(consultant => 
+            transformDatabaseConsultant(consultant)
+          );
+
+          return transformDatabaseProject(project, transformedConsultants);
         })
       );
 
