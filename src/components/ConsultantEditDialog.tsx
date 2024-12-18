@@ -15,6 +15,7 @@ interface ConsultantEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (consultant: Consultant, newGroup: string) => void;
+  onGroupTitleChange?: (groupKey: string, newTitle: string) => void;
 }
 
 export function ConsultantEditDialog({
@@ -24,6 +25,7 @@ export function ConsultantEditDialog({
   open,
   onOpenChange,
   onSave,
+  onGroupTitleChange,
 }: ConsultantEditDialogProps) {
   const form = useForm({
     defaultValues: {
@@ -32,7 +34,9 @@ export function ConsultantEditDialog({
       phone: "",
       specialty: "",
       company: "",
+      address: "",
       group: currentGroup,
+      groupTitle: groups[currentGroup]?.title || "",
     },
   });
 
@@ -41,12 +45,18 @@ export function ConsultantEditDialog({
       form.reset({
         ...consultant,
         group: currentGroup,
+        groupTitle: groups[currentGroup]?.title || "",
       });
     }
-  }, [consultant, currentGroup, form]);
+  }, [consultant, currentGroup, form, groups]);
 
   const handleSubmit = (data: any) => {
-    const { group, ...consultantData } = data;
+    const { group, groupTitle, ...consultantData } = data;
+    
+    if (onGroupTitleChange && groupTitle !== groups[group].title) {
+      onGroupTitleChange(group, groupTitle);
+    }
+    
     onSave(consultantData as Consultant, group);
     onOpenChange(false);
     form.reset();
@@ -122,6 +132,18 @@ export function ConsultantEditDialog({
             />
             <FormField
               control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter address" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="group"
               render={({ field }) => (
                 <FormItem>
@@ -144,6 +166,27 @@ export function ConsultantEditDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="groupTitle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Group Title</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Enter group title" 
+                      {...field} 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        if (onGroupTitleChange) {
+                          onGroupTitleChange(form.getValues().group, e.target.value);
+                        }
+                      }}
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />

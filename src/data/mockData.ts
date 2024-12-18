@@ -4,6 +4,7 @@ export interface Consultant {
   phone: string;
   specialty: string;
   company: string;
+  address?: string;
 }
 
 export interface ProjectConsultant extends Consultant {
@@ -25,15 +26,6 @@ export interface Project {
   clientEmail: string;
   clientPhone: string;
   constructionCost: number;
-}
-
-export interface Payment {
-  consultantEmail: string;
-  amount: number;
-  status: 'pending' | 'paid';
-  invoiceDate: string;
-  paidDate?: string;
-  invoiceName: string;
 }
 
 export const projects: Project[] = [
@@ -97,14 +89,16 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         email: "john@example.com",
         phone: "(555) 123-4567",
         specialty: "UI/UX Design",
-        company: "Tech Solutions Inc"
+        company: "Tech Solutions Inc",
+        address: "123 Main St, City, State"
       },
       {
         name: "Sarah Wilson",
         email: "sarah@example.com",
         phone: "(555) 345-6789",
         specialty: "Civil Engineer",
-        company: "Build Better Ltd"
+        company: "Build Better Ltd",
+        address: "456 Oak Ave, City, State"
       },
     ],
   },
@@ -116,7 +110,8 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         email: "jane@example.com",
         phone: "(555) 234-5678",
         specialty: "Urban Planner",
-        company: "Urban Planning Co"
+        company: "Urban Planning Co",
+        address: "789 Pine Rd, City, State"
       },
     ],
   },
@@ -128,7 +123,8 @@ export const consultantGroups: Record<string, ConsultantGroup> = {
         email: "mike@example.com",
         phone: "(555) 456-7890",
         specialty: "Landscape Architect",
-        company: "Green Spaces Design"
+        company: "Green Spaces Design",
+        address: "321 Elm St, City, State"
       },
     ],
   },

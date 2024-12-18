@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Phone, DollarSign, CheckCircle2, Pause, Timer } from "lucide-react";
+import { Mail, Phone, DollarSign, CheckCircle2, Pause, Timer, MapPin } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ interface ConsultantCardProps {
   phone: string;
   specialty: string;
   company: string;
+  address?: string;
   quote?: number;
   status?: 'in-progress' | 'completed' | 'on-hold';
   onQuoteChange?: (value: number) => void;
@@ -31,6 +32,7 @@ export function ConsultantCard({
   phone, 
   specialty,
   company,
+  address,
   quote, 
   status,
   onQuoteChange,
@@ -128,6 +130,12 @@ export function ConsultantCard({
             <Phone className="mr-2 h-4 w-4" />
             {phone}
           </div>
+          {address && (
+            <div className="flex items-center text-sm text-gray-600">
+              <MapPin className="mr-2 h-4 w-4" />
+              {address}
+            </div>
+          )}
           {(quote !== undefined || showQuoteInput) && (
             <div className="flex items-center text-sm text-gray-600">
               <DollarSign className="mr-2 h-4 w-4" />
