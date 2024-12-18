@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Phone, DollarSign } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
 
 interface ConsultantCardProps {
   name: string;
@@ -8,9 +9,19 @@ interface ConsultantCardProps {
   phone: string;
   specialty: string;
   quote?: number;
+  onQuoteChange?: (value: number) => void;
+  showQuoteInput?: boolean;
 }
 
-export function ConsultantCard({ name, email, phone, specialty, quote }: ConsultantCardProps) {
+export function ConsultantCard({ 
+  name, 
+  email, 
+  phone, 
+  specialty, 
+  quote, 
+  onQuoteChange,
+  showQuoteInput 
+}: ConsultantCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="flex flex-row items-center space-x-4 pb-2">
@@ -34,10 +45,20 @@ export function ConsultantCard({ name, email, phone, specialty, quote }: Consult
             <Phone className="mr-2 h-4 w-4" />
             {phone}
           </div>
-          {quote !== undefined && (
+          {(quote !== undefined || showQuoteInput) && (
             <div className="flex items-center text-sm text-gray-600">
               <DollarSign className="mr-2 h-4 w-4" />
-              Quote: ${quote.toLocaleString()}
+              {showQuoteInput ? (
+                <Input
+                  type="number"
+                  value={quote || ''}
+                  onChange={(e) => onQuoteChange?.(Number(e.target.value))}
+                  placeholder="Enter quote amount"
+                  className="w-full"
+                />
+              ) : (
+                `Quote: $${quote?.toLocaleString()}`
+              )}
             </div>
           )}
         </div>

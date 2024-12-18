@@ -118,27 +118,19 @@ export default function ProjectDetail() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {group.consultants.map((consultant) => (
-                    <div key={consultant.email} className="space-y-2">
-                      <div className="relative">
-                        <div className="absolute top-4 right-4 z-10">
-                          <Checkbox
-                            checked={selectedConsultants.some(c => c.email === consultant.email)}
-                            onCheckedChange={() => handleConsultantToggle(consultant)}
-                          />
-                        </div>
-                        <ConsultantCard {...consultant} />
+                    <div key={consultant.email} className="relative">
+                      <div className="absolute top-4 right-4 z-10">
+                        <Checkbox
+                          checked={selectedConsultants.some(c => c.email === consultant.email)}
+                          onCheckedChange={() => handleConsultantToggle(consultant)}
+                        />
                       </div>
-                      {selectedConsultants.some(c => c.email === consultant.email) && (
-                        <div className="px-4">
-                          <Input
-                            type="number"
-                            placeholder="Quote amount"
-                            value={quotes[consultant.email] || ''}
-                            onChange={(e) => handleQuoteChange(consultant.email, e.target.value)}
-                            className="w-full"
-                          />
-                        </div>
-                      )}
+                      <ConsultantCard 
+                        {...consultant}
+                        showQuoteInput={selectedConsultants.some(c => c.email === consultant.email)}
+                        quote={quotes[consultant.email]}
+                        onQuoteChange={(value) => handleQuoteChange(consultant.email, value.toString())}
+                      />
                     </div>
                   ))}
                 </div>
