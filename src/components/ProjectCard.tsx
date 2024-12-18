@@ -51,7 +51,9 @@ const getStatusDetails = (status: string) => {
 export function ProjectCard({ title, status, dueDate, consultants, onStatusChange }: ProjectCardProps) {
   const currentStatus = getStatusDetails(status);
 
-  const handleStatusSelect = (newStatus: "active" | "completed" | "on-hold") => {
+  const handleStatusSelect = (newStatus: "active" | "completed" | "on-hold", e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation
+    e.stopPropagation(); // Stop event from bubbling up
     if (onStatusChange) {
       onStatusChange(newStatus);
       toast.success(`Project status updated to ${getStatusDetails(newStatus).text}`);
@@ -77,7 +79,7 @@ export function ProjectCard({ title, status, dueDate, consultants, onStatusChang
       </CardContent>
       <CardFooter className="mt-auto pt-4">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
             <Button
               variant="outline"
               size="sm"
@@ -88,15 +90,15 @@ export function ProjectCard({ title, status, dueDate, consultants, onStatusChang
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[200px]">
-            <DropdownMenuItem onClick={() => handleStatusSelect('active')}>
+            <DropdownMenuItem onClick={(e) => handleStatusSelect('active', e)}>
               <Timer className="mr-2 h-4 w-4" />
               In Progress
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusSelect('completed')}>
+            <DropdownMenuItem onClick={(e) => handleStatusSelect('completed', e)}>
               <CheckCircle2 className="mr-2 h-4 w-4" />
               Completed
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusSelect('on-hold')}>
+            <DropdownMenuItem onClick={(e) => handleStatusSelect('on-hold', e)}>
               <Pause className="mr-2 h-4 w-4" />
               On Hold
             </DropdownMenuItem>
