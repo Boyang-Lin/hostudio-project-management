@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 interface ProjectCardProps {
   id?: string;
@@ -25,25 +26,25 @@ const getStatusDetails = (status: string) => {
     case 'active':
       return { 
         icon: Timer, 
-        bg: 'bg-warning',
+        bg: 'bg-yellow-500',
         text: 'In Progress'
       };
     case 'completed':
       return { 
         icon: CheckCircle2, 
-        bg: 'bg-success',
+        bg: 'bg-green-500',
         text: 'Completed'
       };
     case 'on-hold':
       return { 
         icon: Pause, 
-        bg: 'bg-danger',
+        bg: 'bg-red-500',
         text: 'On Hold'
       };
     default:
       return { 
         icon: Timer, 
-        bg: 'bg-warning',
+        bg: 'bg-yellow-500',
         text: 'In Progress'
       };
   }
@@ -81,38 +82,41 @@ export function ProjectCard({
   return (
     <Card className="hover:shadow-lg transition-shadow relative flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-xl font-bold">{title}</CardTitle>
+        <CardTitle className="text-xl font-bold text-primary">{title}</CardTitle>
+        <Badge variant="outline" className={`${currentStatus.bg} text-white`}>
+          <currentStatus.icon className="mr-1 h-4 w-4" />
+          {currentStatus.text}
+        </Badge>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col space-y-2">
+      <CardContent className="flex-grow">
+        <div className="space-y-3">
           <div className="flex items-center text-sm text-gray-600">
             <User className="mr-2 h-4 w-4" />
             {client_name}
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <Mail className="mr-2 h-4 w-4" />
-            {client_email}
+            <a href={`mailto:${client_email}`} className="hover:text-primary">
+              {client_email}
+            </a>
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <Phone className="mr-2 h-4 w-4" />
-            {client_phone}
+            <a href={`tel:${client_phone}`} className="hover:text-primary">
+              {client_phone}
+            </a>
           </div>
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm font-semibold">
             <DollarSign className="mr-2 h-4 w-4" />
             {formatCurrency(construction_cost)}
           </div>
         </div>
       </CardContent>
-      <CardFooter className="mt-auto pt-4">
+      <CardFooter className="pt-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="outline"
-              size="sm"
-              className={`${currentStatus.bg} text-white w-full`}
-            >
-              <currentStatus.icon className="mr-2 h-4 w-4" />
-              {currentStatus.text}
+            <Button variant="outline" size="sm" className="w-full">
+              Change Status
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[200px]">
