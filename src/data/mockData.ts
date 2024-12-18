@@ -8,6 +8,7 @@ export interface Consultant {
 
 export interface ProjectConsultant extends Consultant {
   quote: number;
+  status?: 'in-progress' | 'completed' | 'on-hold';
 }
 
 export interface ConsultantGroup {
@@ -45,7 +46,8 @@ export const projects: Project[] = [
         phone: "(555) 123-4567",
         specialty: "UI/UX Design",
         company: "Tech Solutions Inc",
-        quote: 15000
+        quote: 15000,
+        status: 'in-progress'
       },
       {
         name: "Jane Smith",
@@ -53,7 +55,8 @@ export const projects: Project[] = [
         phone: "(555) 234-5678",
         specialty: "Urban Planner",
         company: "Urban Planning Co",
-        quote: 18000
+        quote: 18000,
+        status: 'completed'
       }
     ],
   },
@@ -69,7 +72,8 @@ export const projects: Project[] = [
         phone: "(555) 456-7890",
         specialty: "Landscape Architect",
         company: "Green Spaces Design",
-        quote: 20000
+        quote: 20000,
+        status: 'on-hold'
       }
     ],
   },

@@ -92,6 +92,16 @@ export default function ProjectDetail() {
     }
   };
 
+  const handleStatusChange = (email: string, status: 'in-progress' | 'completed' | 'on-hold') => {
+    setSelectedConsultants(prev =>
+      prev.map(consultant =>
+        consultant.email === email
+          ? { ...consultant, status }
+          : consultant
+      )
+    );
+  };
+
   return (
     <div className="container mx-auto py-8">
       <Link to="/" className="flex items-center text-primary hover:underline mb-6">
@@ -152,7 +162,12 @@ export default function ProjectDetail() {
                   className="cursor-pointer"
                   onClick={() => handleConsultantClick(consultant)}
                 >
-                  <ConsultantCard {...consultant} quote={quotes[consultant.email]} />
+                  <ConsultantCard 
+                    {...consultant} 
+                    quote={quotes[consultant.email]}
+                    showStatus={true}
+                    onStatusChange={(status) => handleStatusChange(consultant.email, status)}
+                  />
                 </div>
               ))}
             </div>
