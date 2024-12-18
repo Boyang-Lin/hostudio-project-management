@@ -11,8 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface ConsultantsListProps {
-  consultantGroups: Record<string, { title: string; consultants: Consultant[] }>;
-  onConsultantGroupsChange: (groups: Record<string, { title: string; consultants: Consultant[] }>) => void;
   onNewConsultant: () => void;
   onNewGroup: () => void;
 }
@@ -77,38 +75,68 @@ export function ConsultantsList({
     }
   });
 
-  const handleConsultantUpdate = (updatedConsultant: Consultant, newGroupKey: string) => {
-    const newGroups = { ...consultantGroups };
-    
-    if (editingConsultant && editingConsultant.groupKey !== newGroupKey) {
-      newGroups[editingConsultant.groupKey].consultants = newGroups[editingConsultant.groupKey].consultants
-        .filter(c => c.email !== editingConsultant.consultant.email);
-      newGroups[newGroupKey].consultants.push(updatedConsultant);
-    } else if (editingConsultant) {
-      newGroups[editingConsultant.groupKey].consultants = newGroups[editingConsultant.groupKey].consultants
-        .map(c => c.email === editingConsultant.consultant.email ? updatedConsultant : c);
+  const handleConsultantUpdate = async (updatedConsultant: Consultant, newGroupKey: string) => {
+    if (!editingConsultant) return;
+
+    const { error } = await supabase
+      .from('consultants')
+      .update({
+        name: updatedConsultant.name,
+        email: updatedConsultant.email,
+        phone: updatedConsultant.phone,
+        specialty: updatedConsultant.specialty,
+        company: updatedConsultant.company,
+        address: updatedConsultant.address
+      })
+      .eq('email', editingConsultant.consultant.email);
+
+    if (error) {
+      toast.error('Failed to update consultant');
+      return;
     }
-    
-    onConsultantGroupsChange(newGroups);
+
+    queryClient.invalidateQueries({ queryKey: ['consultant-groups'] });
+    setEditingConsultant(null);
     toast.success("Consultant updated successfully");
   };
 
-  const handleDeleteConsultant = () => {
-    if (deletingConsultant) {
-      const newGroups = { ...consultantGroups };
-      newGroups[deletingConsultant.group].consultants = newGroups[deletingConsultant.group].consultants
-        .filter(c => c.email !== deletingConsultant.consultant.email);
-      onConsultantGroupsChange(newGroups);
-      setDeletingConsultant(null);
-      toast.success("Consultant deleted successfully");
+  const handleDeleteConsultant = async () => {
+    if (!deletingConsultant) return;
+
+    const { error } = await supabase
+      .from('consultants')
+      .delete()
+      .eq('email', deletingConsultant.consultant.email);
+
+    if (error) {
+      toast.error('Failed to delete consultant');
+      return;
     }
+
+    queryClient.invalidateQueries({ queryKey: ['consultant-groups'] });
+    setDeletingConsultant(null);
+    toast.success("Consultant deleted successfully");
   };
 
-  const handleNewConsultant = (data: Consultant & { group: string }) => {
-    const { group, ...consultantData } = data;
-    const newGroups = { ...consultantGroups };
-    newGroups[group].consultants.push(consultantData);
-    onConsultantGroupsChange(newGroups);
+  const handleNewConsultant = async (data: Consultant & { group: string }) => {
+    const { error } = await supabase
+      .from('consultants')
+      .insert([{
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        specialty: data.specialty,
+        company: data.company,
+        address: data.address
+      }]);
+
+    if (error) {
+      toast.error('Failed to add consultant');
+      return;
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['consultant-groups'] });
+    setShowNewConsultantDialog(false);
     toast.success("Consultant added successfully");
   };
 
@@ -137,7 +165,6 @@ export function ConsultantsList({
             <Button variant="ghost" size="sm" onClick={() => {
               const newTitle = prompt("Enter new group title:", group.title);
               if (newTitle && newTitle !== group.title) {
-                // Update group title in Supabase
                 supabase
                   .from('consultant_groups')
                   .update({ title: newTitle })
