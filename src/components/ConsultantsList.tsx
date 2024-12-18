@@ -7,6 +7,8 @@ import { Plus, Trash2, Edit } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { NewConsultantDialog } from "./NewConsultantDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface ConsultantsListProps {
   consultantGroups: Record<string, { title: string; consultants: Consultant[] }>;
@@ -16,14 +18,64 @@ interface ConsultantsListProps {
 }
 
 export function ConsultantsList({
-  consultantGroups,
-  onConsultantGroupsChange,
   onNewConsultant,
   onNewGroup,
 }: ConsultantsListProps) {
   const [editingConsultant, setEditingConsultant] = useState<{ consultant: Consultant; groupKey: string } | null>(null);
   const [deletingConsultant, setDeletingConsultant] = useState<{ consultant: Consultant; group: string } | null>(null);
   const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: groupsData = {}, isLoading } = useQuery({
+    queryKey: ['consultant-groups'],
+    queryFn: async () => {
+      // First fetch all consultant groups
+      const { data: groups, error: groupsError } = await supabase
+        .from('consultant_groups')
+        .select('*');
+
+      if (groupsError) {
+        toast.error('Failed to fetch consultant groups');
+        throw groupsError;
+      }
+
+      // Then fetch all consultants
+      const { data: consultants, error: consultantsError } = await supabase
+        .from('consultants')
+        .select('*');
+
+      if (consultantsError) {
+        toast.error('Failed to fetch consultants');
+        throw consultantsError;
+      }
+
+      // Transform the data into the expected format
+      const groupedData: Record<string, { title: string; consultants: Consultant[] }> = {};
+      
+      groups.forEach((group: any) => {
+        groupedData[group.id] = {
+          title: group.title,
+          consultants: []
+        };
+      });
+
+      // Add consultants to their respective groups
+      consultants.forEach((consultant: any) => {
+        Object.keys(groupedData).forEach(groupId => {
+          groupedData[groupId].consultants.push({
+            name: consultant.name,
+            email: consultant.email,
+            phone: consultant.phone,
+            specialty: consultant.specialty,
+            company: consultant.company,
+            address: consultant.address
+          });
+        });
+      });
+
+      return groupedData;
+    }
+  });
 
   const handleConsultantUpdate = (updatedConsultant: Consultant, newGroupKey: string) => {
     const newGroups = { ...consultantGroups };
@@ -60,6 +112,10 @@ export function ConsultantsList({
     toast.success("Consultant added successfully");
   };
 
+  if (isLoading) {
+    return <div>Loading consultants...</div>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -74,17 +130,26 @@ export function ConsultantsList({
         </div>
       </div>
 
-      {Object.entries(consultantGroups).map(([key, group]) => (
+      {Object.entries(groupsData).map(([key, group]) => (
         <div key={key} className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-semibold">{group.title}</h3>
             <Button variant="ghost" size="sm" onClick={() => {
               const newTitle = prompt("Enter new group title:", group.title);
               if (newTitle && newTitle !== group.title) {
-                const newGroups = { ...consultantGroups };
-                newGroups[key].title = newTitle;
-                onConsultantGroupsChange(newGroups);
-                toast.success("Group title updated successfully");
+                // Update group title in Supabase
+                supabase
+                  .from('consultant_groups')
+                  .update({ title: newTitle })
+                  .eq('id', key)
+                  .then(({ error }) => {
+                    if (error) {
+                      toast.error('Failed to update group title');
+                    } else {
+                      queryClient.invalidateQueries({ queryKey: ['consultant-groups'] });
+                      toast.success("Group title updated successfully");
+                    }
+                  });
               }
             }}>
               <Edit className="h-4 w-4" />
@@ -120,7 +185,7 @@ export function ConsultantsList({
       <ConsultantEditDialog
         consultant={editingConsultant?.consultant || null}
         currentGroup={editingConsultant?.groupKey || ''}
-        groups={consultantGroups}
+        groups={groupsData}
         open={!!editingConsultant}
         onOpenChange={(open) => !open && setEditingConsultant(null)}
         onSave={handleConsultantUpdate}
@@ -138,7 +203,7 @@ export function ConsultantsList({
         open={showNewConsultantDialog}
         onOpenChange={setShowNewConsultantDialog}
         onSave={handleNewConsultant}
-        groups={consultantGroups}
+        groups={groupsData}
       />
     </div>
   );

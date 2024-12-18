@@ -26,14 +26,19 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('projects')
-        .select('*, project_consultants(*, consultants(*))');
+        .select(`
+          *,
+          project_consultants (
+            *,
+            consultant: consultants (*)
+          )
+        `);
       
       if (error) {
         toast.error('Failed to fetch projects');
         throw error;
       }
       
-      // Transform the data to match the Project type
       return data.map((project: any) => ({
         id: project.id,
         title: project.title,
@@ -49,7 +54,9 @@ export function ProjectsList({ onNewProject }: ProjectsListProps) {
           phone: pc.consultant?.phone,
           specialty: pc.consultant?.specialty,
           company: pc.consultant?.company,
-          address: pc.consultant?.address
+          address: pc.consultant?.address,
+          quote: pc.quote,
+          status: pc.status
         })) || []
       }));
     },
