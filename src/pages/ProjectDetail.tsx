@@ -47,6 +47,15 @@ export default function ProjectDetail() {
 
   const handleProjectStatusChange = (newStatus: "active" | "completed" | "on-hold") => {
     setProjectStatus(newStatus);
+    // Update the project in localStorage
+    const storedProjects = localStorage.getItem('projects');
+    if (storedProjects) {
+      const updatedProjects = JSON.parse(storedProjects).map((p: any) =>
+        p.id === project.id ? { ...p, status: newStatus } : p
+      );
+      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      toast.success(`Project status updated to ${newStatus}`);
+    }
   };
 
   const handleConsultantToggle = (consultant: Consultant) => {
@@ -180,4 +189,3 @@ export default function ProjectDetail() {
       )}
     </div>
   );
-}

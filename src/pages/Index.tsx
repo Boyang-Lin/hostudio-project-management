@@ -24,6 +24,18 @@ export default function Index() {
   const [showNewConsultantDialog, setShowNewConsultantDialog] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
 
+  // Add an effect to listen for storage changes
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'projects' && e.newValue) {
+        setLocalProjects(JSON.parse(e.newValue));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('projects', JSON.stringify(localProjects));
   }, [localProjects]);
