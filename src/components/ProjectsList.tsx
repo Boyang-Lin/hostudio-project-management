@@ -57,21 +57,27 @@ export function ProjectsList({ projects, onProjectsChange, onNewProject }: Proje
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
-          <div key={project.id} className="relative">
-            <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+          <div key={project.id} className="relative group">
+            <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
               <Button
-                variant="ghost"
-                size="sm"
-                className="bg-white/90 hover:bg-white"
-                onClick={() => setEditingProject(project)}
+                size="icon"
+                variant="secondary"
+                className="h-8 w-8 bg-white/90 hover:bg-white shadow-sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setEditingProject(project);
+                }}
               >
                 <Pencil className="h-4 w-4" />
               </Button>
               <Button
-                variant="ghost"
-                size="sm"
-                className="bg-white/90 hover:bg-white text-destructive hover:text-destructive"
-                onClick={() => setDeletingProject(project)}
+                size="icon"
+                variant="destructive"
+                className="h-8 w-8"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setDeletingProject(project);
+                }}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
